@@ -4,6 +4,9 @@ import scala.collection.immutable.Seq
 
 import fuel.util.CodeExecutor
 
+/* Tests represents a pair of program input and the corresponding desired output 
+ * 
+ */
 class Test[I, O](input: I, output: O) extends Tuple2(input, output) {
   def input = _1
   def output = _2

@@ -44,7 +44,8 @@ case object ArraySearch extends DomainWithVars[Seq[Int], Int, Op](6) {
     assume(input.size == numVars)
     new Function1[Op, Any] {
       def apply(op: Op): Any = {
-        val childRes = op.args.toSeq.map(c => apply(c)).toList // Need toList (otherwise ArrayBuffer)
+        // Needs toList (otherwise ArrayBuffer, which doesn't work with patter matching)
+        val childRes = op.args.toSeq.map(c => apply(c)).toList 
         childRes.+:(op.op) match {
           case Seq('<, x: Int, y: Int)               => x < y
           case Seq('<=, x: Int, y: Int)              => x <= y
@@ -58,7 +59,6 @@ case object ArraySearch extends DomainWithVars[Seq[Int], Int, Op](6) {
           case Seq('y5)                              => input(4)
           case Seq('k)                               => input(5)
           case Seq(v: Int)                           => v
-          case e                                     => throw new Exception("AAA:" + e)
         }
       }
     }

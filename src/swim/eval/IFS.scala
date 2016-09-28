@@ -18,6 +18,10 @@ import swim.Test
   * Ed. by Darrell Whitley et al. Las Vegas, Nevada, USA: Morgan Kaufmann, Oct. 2000, pp. 435–442. isbn: 1-55860-708-0.
   * http://www.cs.bham.ac.uk/~wbl/biblio/gecco2000/GP256.ps.
   *
+  * In each generation, IFS counts the number of tests passed by each program, 
+  * and defines test *hardness* as the reciprocal of that number. Program's fitness
+  * is then the sum of hardness values of the tests passed by that program. 
+  * 
   * IFS evaluation is contextual, i.e., must be applied to the entire population simultaneously.
   *
   * Note: IFS fitness is *maximized*.
@@ -47,42 +51,6 @@ trait IFSEval {
       }
     }
 }
+
 object IFSEval extends IFSEval
 
-/*
-  // My variant of IFS that is applicable to non-binary, ordinal interaction outcomes
-  // Whether a program passed a test is determined based on the ranking of the test on this program's output
-  // WARNING: Works only for binary interaction outcomes!
-  trait EvaluatorOrdinal[P <: Program[I, Double], I]
-    extends fuel.mixin.Evaluator[P, BinaryTestOutcomes] {
-    this: Tests[I, Double] =>
-    lazy val nneg = tests.count(_._2 <= 0)
-
-    override def apply(l: Seq[P]) = {
-      val outs = l.map(p => tests.map(t => (p(t._1), t._2))).toVector
-      val ranks = outs.map(o => {
-        val sor = 0.until(tests.size).sorted(new Ordering[Int] {
-          def compare(a: Int, b: Int) = {
-            val r = o(a)._1 compare o(b)._1
-            if (r != 0) r
-            else
-              o(b)._2 compare o(a)._2
-          }
-        })
-        val pos = sor.zip(0.until(sor.size)).sorted(new Ordering[(Int, Int)] {
-          def compare(a: (Int, Int), b: (Int, Int)) = a._1 compare b._1
-        }).map(_._2).toVector
-        //      if (o(sor.head)._1 == o(sor.last)._1)
-        //        println(pos)
-        pos
-      }).toVector
-      0.until(l.size).map(i => ESol(l(i), new BinaryTestOutcomes(
-        0.until(tests.size).map(j => ScalarEvaluationMax( // tests
-          // this is the difficulty measure:     
-          if (ranks(i)(j) < nneg)
-            if (tests(j)._2 <= 0) 1 else 0
-          else if (tests(j)._2 > 0) 1 else 0)))))
-    }
-  }
-
-*/

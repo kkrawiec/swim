@@ -12,6 +12,17 @@ import swim.Test
 import swim.Grammar
 
 
+/* The domain for solving certain class of problems in finite algebras, 
+ * as defined in: 
+ * 
+ * L. Spector, D. M. Clark, I. Lindsay, B. Barr, and
+ * J. Klein. Genetic programming for finite algebras. 
+ * In M. Keijzer, et al., editors, GECCO ’08: Proceedings of the 10th annual conference 
+ * on Genetic and evolutionary computation, pages 1291–1298, 
+ * Atlanta, GA, USA, 12-16 July 2008. ACM.
+ * 
+ */
+
 case class AlgebraDomain(override val numVars: Int, val algebra: Array[Array[Int]])
     extends DomainWithVars[Seq[Int], Int, Op](numVars) {
   assume(algebra.nonEmpty)

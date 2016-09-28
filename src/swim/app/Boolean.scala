@@ -33,6 +33,10 @@ case class BooleanDomain(override val numVars: Int) extends DomainWithVars[Seq[B
   }
 }
 
+
+/* Some popular Boolean function synthesis benchmarks.
+ * See http://gpbenchmarks.org/ for more. 
+ */
 case class BooleanBenchmark(implicit rng: TRandom) extends ProblemProvider[Seq[Boolean], Boolean, Op] {
   def apply(conf: Options) = {
     val benchmarkName = conf.paramString("benchmark")
@@ -58,4 +62,7 @@ case class BooleanBenchmark(implicit rng: TRandom) extends ProblemProvider[Seq[B
     }) + (0 -> List(ConstantProviderUniformI(0, numVars - 1))) // input variables
     (Grammar.fromSingleTypeInstructions(instrSet), BooleanDomain(numVars), tests)
   }
+}
+case object BooleanBenchmark {
+  def allBenchmarks = Seq("mux3", "mux6", "mux11", "cmp6", "cmp8", "par5", "maj5")
 }

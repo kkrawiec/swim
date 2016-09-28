@@ -10,9 +10,12 @@ import swim.tree.ConstantProviderUniformI
 import swim.tree.Op
 import swim.tree.SimpleGP
 
-/* Simple example of evolving a program that calculates the minumum of a pair of numbers. 
- * 
- * To enable elegant pattern matching, *all* arguments of an instruction are evaluated
+/* Simple example of evolving a program that calculates the minimum of a pair of numbers. 
+ * The specification of grammar taken from the max2.sl problem used in the SyGuS contest 
+ * (http://www.sygus.org)
+ */
+
+/* To enable type-sensitive pattern matching, *all* arguments of an instruction are evaluated
  * in advance. Thus, all tree nodes get evaluated; for instance both the positive and
  * the negative branch of 'ite' get evaluated, no matter what the condition evaluates to. 
  * This could be solved differently; note for instance that 'ite' does not care about 
@@ -24,7 +27,7 @@ case object MinDomain extends DomainWithVars[Seq[Int], Int, Op](2) {
     assume(input.size == numVars)
     new Function1[Op, Any] {
       def apply(op: Op): Any = {
-        val childRes = op.args.map(c => apply(c)) // TODO: consider avoiding toSeq for performance. However, not easy as ArrayBuffer does not pattern match. 
+        val childRes = op.args.map(c => apply(c)) 
         childRes.+:(op.op) match { // or: op.nt :: op.op :: childRes if needed
           case Seq('!, x: Boolean)                   => !x
           case Seq('&, x: Boolean, y: Boolean)       => x & y

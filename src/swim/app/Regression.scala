@@ -1,14 +1,16 @@
 package swim.app
 
+import scala.annotation.elidable
+import scala.annotation.elidable.ASSERTION
+
 import fuel.util.Options
 import fuel.util.TRandom
-import swim.ProblemProvider
-import swim.tree.ConstantProviderUniformI
 import swim.DomainWithVars
-import swim.tree.Op
-import swim.Tests
 import swim.Grammar
-
+import swim.ProblemProvider
+import swim.Tests
+import swim.tree.ConstantProviderUniformI
+import swim.tree.Op
 
 case class FloatingPointDomain(override val numVars: Int) extends DomainWithVars[Seq[Double], Double, Op](numVars) {
   override def semantics(input: Seq[Double]) = {
@@ -36,6 +38,10 @@ case class FloatingPointDomain(override val numVars: Int) extends DomainWithVars
     }
   }
 }
+
+/* Typical instruction sets used in symbolic regression. 
+ * 
+ */
 object RegressionInstructionSets extends Function1[String, Map[Int, List[Symbol]]] {
   val arithm = List('+, '-, '*, '/)
   def apply(name: String) = name match {
@@ -45,26 +51,29 @@ object RegressionInstructionSets extends Function1[String, Map[Int, List[Symbol]
   }
 }
 
+/* Some popular symbolic regression benchmarks.
+ * See http://gpbenchmarks.org/ for more. 
+ */
 case class RegressionBenchmark(implicit rng: TRandom) extends ProblemProvider[Seq[Double], Double, Op] {
   def apply(conf: Options) = {
-    // note: 21, not 20 fitness cases
     def pr(d: Double) = f"$d%.2f".toDouble
     def g(l: Double, u: Double, s: Double) = l.to(u, s).map(v => pr(v))
     val bench = Map[Any, (Int, Seq[(Seq[Double], Double)])](
       "quartic" -> (1, g(-1, 1, 0.1).map(x => (Seq(x), x * x * x * x + x * x * x + x * x + x))),
+      "sext" -> (1, g(-1, 1, 0.1).map(x => (Seq(x), x * x * x * x * x * x - 2.0 * x * x * x * x + x * x))),
       "keij1" -> (1, g(-1, 1, 0.1).map(x => (Seq(x), 0.3 * x * math.sin(2 * math.Pi * x)))),
       "keij4" -> (1, g(0, 10, 0.5).map(x => (Seq(x), x * x * x * math.exp(-x) * math.cos(x) * math.sin(x) * (math.sin(x) * math.sin(x) * math.cos(x) - 1)))),
       "nguy3" -> (1, g(-1, 1, 0.1).map(x => (Seq(x), x * x * x * x * x + x * x * x * x + x * x * x + x * x + x))),
       "nguy4" -> (1, g(-1, 1, 0.1).map(x => (Seq(x), x * x * x * x * x * x + x * x * x * x * x + x * x * x * x + x * x * x + x * x + x))),
       "nguy5" -> (1, g(-1, 1, 0.1).map(x => (Seq(x), math.sin(x * x) * math.cos(x) - 1.0))),
       "nguy6" -> (1, g(-1, 1, 0.1).map(x => (Seq(x), math.sin(x) + math.sin(x * x + x)))),
-      "nguy7" -> (1, g(0, 2, 0.1).map(x => (Seq(x), math.log(x + 1) + math.log(x * x + 1.0)))),
-      "sext" -> (1, g(-1, 1, 0.1).map(x => (Seq(x), x * x * x * x * x * x - 2.0 * x * x * x * x + x * x))))
-    /*             ++ List("Keij5", "Keij11", "Keij12", "Keij13", "Keij14", "Keij15", "Nguy9", "Nguy10", "Nguy12"))),
-     */
+      "nguy7" -> (1, g(0, 2, 0.1).map(x => (Seq(x), math.log(x + 1) + math.log(x * x + 1.0)))))
     val (v, gg) = bench(conf.paramString("benchmark"))
     val instrSet = RegressionInstructionSets(conf.paramString("instructions", "default")) +
       (0 -> List(ConstantProviderUniformI(0, v - 1))) // input variables
     (Grammar.fromSingleTypeInstructions(instrSet), FloatingPointDomain(v), Tests(gg.toIndexedSeq))
   }
+}
+case object RegressionBenchmark {
+  def allBenchmarks = Seq("quartic", "sextic", "keij1", "keij4", "nguy3", "nguy4", "nguy5", "nguy6", "nguy7")
 }

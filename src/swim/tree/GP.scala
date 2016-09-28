@@ -19,13 +19,10 @@ import swim.Domain
 import swim.Grammar
 import swim.eval.IFSEval
 
-/**
-  * A simple single-type GP.
-  *
-  *  TODO: All instructions and programs operate on the same type
-  *  (T==I==O)
-  *
-  * May almost equally well inherit from SimpleEA
+/*
+  * A class for realizing the workflow of the conventional 
+  * tree-based GP (multi-type or single-type).
+  * 
   */
 class SimpleGP[I, O, E](moves: Moves[Op],
                         eval: Op => E,
@@ -46,13 +43,13 @@ class SimpleGP[I, O, E](moves: Moves[Op],
   override def algorithm = super.algorithm andThen checkSuccess
 }
 
-object SimpleGP {
-  def defaultFeasible(implicit opt: Options) = {
-    val maxTreeDepth = opt('maxTreeDepth, 12, (_: Int) > 0)
-    (p: Op) => p.height < maxTreeDepth
-  }
 
-  def Discrete[I, O](pprov: ProblemProvider[I, O, Op ])(
+/* Convenience methods for creating instances of SimpleGP tailored
+ * to different domains and classes of problems (e.g., discrete and continuous). 
+ */
+object SimpleGP {
+
+  def Discrete[I, O](pprov: ProblemProvider[I, O, Op])(
     implicit opt: Options, coll: Collector, rng: TRandom): SimpleGP[I, O, Int] = {
     implicit val (grammar, domain, tests) = pprov(opt)
     Discrete(grammar, domain, tests)
@@ -76,7 +73,7 @@ object SimpleGP {
     implicit opt: Options, coll: Collector, rng: TRandom) = {
     implicit val (grammar, domain, tests) = pprov(opt)
     val moves = GPMoves(grammar, defaultFeasible)
-    new EACore[Op, IFSEval.Fitness](moves, IFSEval(tests,domain), correctIFS) {
+    new EACore[Op, IFSEval.Fitness](moves, IFSEval(tests, domain), correctIFS) {
       val selection = TournamentSelection[Op, IFSEval.Fitness](new IFSEval.Ord)
       override def iter = SimpleBreeder(selection, moves: _*) andThen evaluate
     }
@@ -90,6 +87,7 @@ object SimpleGP {
     val moves = GPMoves(grammar, defaultFeasible)
     Lexicase(moves, eval)
   }
+
   def Lexicase[I, O](moves: Moves[Op], eval: Op => Seq[Int])(
     implicit opt: Options, coll: Collector, rng: TRandom) = {
     new EACore(moves, ParallelEval(eval), correctLexicase) {
@@ -107,4 +105,10 @@ object SimpleGP {
     }
   }
   def correctLexicase = (_: Any, e: Seq[Int]) => e.forall(_ == 0)
+
+  def defaultFeasible(implicit opt: Options) = {
+    val maxTreeDepth = opt('maxTreeDepth, 12, (_: Int) > 0)
+    (p: Op) => p.height < maxTreeDepth
+  }
+
 }
