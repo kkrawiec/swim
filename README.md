@@ -3,7 +3,7 @@
 Krzysztof (Chris) Krawiec, <krawiec at cs.put.poznan.pl>
 Sept 2016
 
-SWIM is a compact library that implements the basic functionality of Genetic Programming (GP), a popular stochastic approach to program synthesis [^fg]. I developed its early version in the process of preparing my recent book on behavioral program synthesis using GP [^bps]. 
+SWIM is a compact library that implements the basic functionality of [Genetic Programming (GP)][fg], a popular stochastic approach to program synthesis. I developed its early version in the process of preparing my recent [book][bps] on behavioral program synthesis using GP. 
 
 GP is an evolutionary algorithm (EA) working with a population of programs, represented as combinatorial structures (AST-like trees, instruction sequences, graphs - depending on the 'genre' of GP). In each iteration, programs in the population are evaluated (assessed how well they realize the required functionality), and the well-performing ones are selected and modified using search operators (mutated and crossed-over). In this process, the quality of programs tends to gradually improve and ultimately the sought program is usually synthesized after a number of generations. 
 
@@ -41,7 +41,7 @@ object TestGPBool extends IApp('benchmark -> "mux6", 'maxGenerations -> 100) {
 }
 ```
 
-Past studies in GP showed that conventional fitness as defined above has certain downsides, so SWIM offers also *implicit fitness sharing* [^ifs, ^ifs2] (`eval.IFS`) and *lexicase selection* [^lexi] (`eval.Lexicase`) as alternative evaluation/selection methods. 
+Past studies in GP showed that conventional fitness as defined above has certain downsides, so SWIM offers also [*implicit fitness sharing*][ifs, ifs2] (`eval.IFS`) and [*lexicase selection*][lexi] (`eval.Lexicase`) as alternative evaluation/selection methods. 
 
 Like FUEL, SWIM supports both sequential and parallel (multi-threaded) evaluation of candidate solutions. The latter is default; see `app.ArraySearch5` how to set evaluation mode. 
 
@@ -55,7 +55,7 @@ The FUEL library: https://github.com/kkrawiec/fuel
 
 ## Credits
 
-Much of the inspiration for this library comes from chatting with Jerry Swan, whom I'm deeply indebted for his advice and encouragement. 
+Much of the inspiration for this library comes from chatting with Jerry Swan, whom I'm deeply indebted for his advice and encouragement. The feedback from my student Iwo Błądek was also very helpful.
 
 ## How to cite 
 
@@ -79,13 +79,13 @@ If you decide to use FUEL and like it, please cite my book, *Behavioral Program 
 
 ## Bibliography
 
-[^bps]: Krawiec, K., "Behavioral Program Synthesis with Genetic Programming", Springer International Publishing, 2015. 
+[bps]: Krawiec, K., "Behavioral Program Synthesis with Genetic Programming", Springer International Publishing, 2015. 
 
-[^fg]: Poli, R.; Langdon, W. B. & McPhee, N. F., "A field guide to genetic programming", Published via http://lulu.com and freely available at http://www.gp-field-guide.org.uk, 2008
+[fg]: Poli, R.; Langdon, W. B. & McPhee, N. F., "A field guide to genetic programming", Published via http://lulu.com and freely available at http://www.gp-field-guide.org.uk, 2008
 
-[^lexi]: Helmuth, T.; Spector, L. & Matheson, J., "Solving Uncompromising Problems with Lexicase Selection", IEEE Transactions on Evolutionary Computation, 2015, 19, 630-643
+[lexi]: Helmuth, T.; Spector, L. & Matheson, J., "Solving Uncompromising Problems with Lexicase Selection", IEEE Transactions on Evolutionary Computation, 2015, 19, 630-643
 
-[^ifs]:  Smith, R.E.; Forrest, S.; & Perelson A.S, “Searching for diverse, cooperative populations with genetic algorithms”. Evolutionary Computation, 1993, 1.2 
+[ifs]:  Smith, R.E.; Forrest, S.; & Perelson A.S, “Searching for diverse, cooperative populations with genetic algorithms”. Evolutionary Computation, 1993, 1.2 
 
-[^ifs2]: McKay, R. I., "An Investigation of Fitness Sharing in Genetic Programming", The Australian Journal of Intelligent Information Processing Systems, 2001, 7, 43-51
+[ifs2]: McKay, R. I., "An Investigation of Fitness Sharing in Genetic Programming", The Australian Journal of Intelligent Information Processing Systems, 2001, 7, 43-51
 
