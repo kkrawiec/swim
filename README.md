@@ -1,5 +1,8 @@
 # SWIM: Synthesis with Metaheuristics - Genetic Programming in Scala
 
+Krzysztof (Chris) Krawiec, <krawiec at cs.put.poznan.pl>
+Sept 2016
+
 SWIM is a compact library that implements the basic functionality of Genetic Programming (GP), a popular stochastic approach to program synthesis [^fg]. I developed its early version in the process of preparing my recent book on behavioral program synthesis using GP [^bps]. 
 
 GP is an evolutionary algorithm (EA) working with a population of programs, represented as combinatorial structures (AST-like trees, instruction sequences, graphs - depending on the 'genre' of GP). In each iteration, programs in the population are evaluated (assessed how well they realize the required functionality), and the well-performing ones are selected and modified using search operators (mutated and crossed-over). In this process, the quality of programs tends to gradually improve and ultimately the sought program is usually synthesized after a number of generations. 
@@ -29,7 +32,14 @@ Grammars define only program syntax. The semantics of particular instructions ar
 
 The default definition of program's evaluation (*fitness*) is the number of tests passed by a program - see `tree.SimpleGP.Discrete`. A test is a pair composed of program input and the corresponding desired program output (see `Test`). SWIM follows the convention of FUEL and defines fitness as a minimized objective, i.e., the number of tests *failed* by a program. 
 
-To launch a GP run in SWIM, one needs to provide a grammar defining language syntax, a corresponding domain defining program semantics, and the set of tests that defines program correctness. Given these three, launching a GP run requires just one function call; see for instance `app.Min2`.
+To launch a GP run in SWIM, one needs to provide a grammar defining language syntax, a corresponding domain defining program semantics, and the set of tests that defines program correctness. Given these three, launching a GP run requires just one function call; see for instance `app.Min2` or `swim.app.TestGPMyProblem`.
+
+Testing GP on a given benchmark is even simpler; an example of applying GP to a 6-bit multiplexer problem: 
+```
+object TestGPBool extends IApp('benchmark -> "mux6", 'maxGenerations -> 100) {
+  RunExperiment(SimpleGP.Discrete(BooleanBenchmark()))
+}
+```
 
 Past studies in GP showed that conventional fitness as defined above has certain downsides, so SWIM offers also *implicit fitness sharing* [^ifs, ^ifs2] (`eval.IFS`) and *lexicase selection* [^lexi] (`eval.Lexicase`) as alternative evaluation/selection methods. 
 
@@ -38,6 +48,33 @@ Like FUEL, SWIM supports both sequential and parallel (multi-threaded) evaluatio
 SWIM largely follows the good practices of functional programming: virtually all objects are immutable, and inheritance is used sparingly.  
 
 The `app.Tests` file provides a few commented examples of configuring and running GP in SWIM.  
+
+## Prerequisites
+
+The FUEL library: https://github.com/kkrawiec/fuel 
+
+## Credits
+
+Much of the inspiration for this library comes from chatting with Jerry Swan, whom I'm deeply indebted for his advice and encouragement. 
+
+## How to cite 
+
+If you decide to use FUEL and like it, please cite my book, *Behavioral Program Synthesis with Genetic Programming*  published by Springer. You can find out more about the book [here](http://www.cs.put.poznan.pl/kkrawiec/bps/). 
+
+~~~~~{.bib}
+@book{KrawiecBPS2015,
+    title = {Behavioral Program Synthesis with Genetic Programming},
+    author = {Krzysztof Krawiec},
+    publisher = {Springer International Publishing},
+    series = {Studies in Computational Intelligence},
+    year = 2016,
+    volume = {618},
+    doi = {10.1007/978-3-319-27565-9},
+    isbn = {978-3-319-27563-5},
+    url = { http://www.springer.com/gp/book/9783319275635 },
+    note = { http://www.cs.put.poznan.pl/kkrawiec/bps }
+ }
+~~~~~
 
 
 ## Bibliography
