@@ -11,7 +11,7 @@ import swim.Grammar
   * terminates and starts anew.
   *
   * Recommendation:
-  *  Even relatively stoppingDepth values may lead to huge programs. Recommended setting is below 5.
+  *  Even relatively low stoppingDepth values may lead to huge programs. Recommended setting is below 5.
   */
 class CodeFactory(val grammar: Grammar, stoppingDepth: Int, maxDepth: Int)(
     implicit rng: TRandom) {

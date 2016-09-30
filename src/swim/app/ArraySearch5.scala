@@ -16,7 +16,7 @@ import swim.Grammar
   *  respect to array contents.
   *
   *  There is one exception in the Scala implementation below: the original specification does not specify
-  *  porgram output when k is equal to any element of the array.
+  *  program output when k is equal to any element of the array.
   *
   * (set-logic LIA)
   * (synth-fun findIdx ( (y1 Int) (y2 Int) (y3 Int) (y4 Int) (y5 Int) (k1 Int)) Int
@@ -44,7 +44,7 @@ case object ArraySearch extends DomainWithVars[Seq[Int], Int, Op](6) {
     assume(input.size == numVars)
     new Function1[Op, Any] {
       def apply(op: Op): Any = {
-        // Needs toList (otherwise ArrayBuffer, which doesn't work with patter matching)
+        // Needs toList (otherwise ArrayBuffer, which doesn't work with pattern matching)
         val childRes = op.args.toSeq.map(c => apply(c)).toList 
         childRes.+:(op.op) match {
           case Seq('<, x: Int, y: Int)               => x < y
