@@ -30,7 +30,9 @@ case class Op(val nt: Any, val op: Any, val args: Op*) extends Program {
     }
     case _ => None
   }
-  def contains(theOp: Any): Boolean = if (op == theOp) true
-  else args.exists { child => child.contains(theOp) }
+  def contains(theOp: Any): Boolean =
+    if (op == theOp) true
+    else args.exists { child => child.contains(theOp) }
+  def setArgs(newArgs: Seq[Op]): Op = Op(this.nt, this.op, newArgs:_*)
 }
 
