@@ -5,6 +5,7 @@ import swim.tree.ConstantProviderUniformI
 import swim.tree.Op
 import swim.tree.CodeFactory
 import fuel.util.Random
+import scala.collection.immutable.Seq
 
 /* Represents a single grammar production with a nonterminal nt. 
  * The right-hand side (RHS) r is a list of the following:
@@ -41,15 +42,23 @@ case class Grammar(g: Map[Any, Seq[Any]]) {
   // For fast retrieval of productions, we store them in a map
   // indexed with the nonterminals:
   val allProductions = g map { case (k, v) => (k -> Production(k, v)) }
-  // Are all nonterminals in RHS of productions present as LHSs of productions?
-  assume(allProductions.values.forall(
-    _.nonTerminalRHs.forall(_ match {
-      case (op: Any, args: Seq[Any]) =>
-        args.forall(
-          a => allProductions.keys.exists(_ == a))
-      case (op: Any, arg: Any) => allProductions.keys.exists(_ == arg)
-      case rhs                 => throw new InvalidGrammarSyntax(f"Ill-formed right-hand side: $rhs")
-    })))
+
+  private val wrongRHSs = {
+    for (p <- allProductions.values) yield {
+      p.nonTerminalRHs.filter { rhs =>
+        !(rhs match {
+          case (op: Any, args: Seq[Any]) =>
+            args.forall(
+              a => allProductions.keys.exists(_ == a))
+          case (op: Any, arg: Any) => allProductions.keys.exists(_ == arg)
+          case rhs                 => throw new InvalidGrammarSyntax(f"Ill-formed right-hand side: $rhs")
+        })
+      }
+    }
+  }.flatten
+  assume(wrongRHSs.isEmpty,
+    f"All nonterminals on the righ-hand sides have to have productions starting with them. These don't: ${wrongRHSs}")
+
   // A subset of productions that have no nonterminals in their RHSs
   val terminalProductions = allProductions.filter(_._2.hasTerminalRHs)
     .map(p => (p._1 -> Production(p._2.nt, p._2.terminalRHs)))
@@ -58,6 +67,9 @@ case class Grammar(g: Map[Any, Seq[Any]]) {
 
 case object Grammar {
   def apply(g: (Any, Seq[Any])*) = new Grammar(g.toMap)
+  def fromMap[N, R](g: Map[N, Seq[R]]) = new Grammar(g map {
+    case (k, v) => k.asInstanceOf[Any] -> v.asInstanceOf[Seq[R]]
+  })
   // Expects map of entries: (arity -> Seq of instructions)
   def fromSingleTypeInstructions(instr: (Int, Seq[Any])*): Grammar =
     fromSingleTypeInstructions(instr.toMap)
@@ -67,13 +79,12 @@ case object Grammar {
         case (0, instrList)     => instrList
         case (arity, instrList) => instrList.map(instr => instr -> Seq.fill(arity)('S))
       }
-    }.flatten.toSeq
+    }.flatten.toList
     new Grammar(Map('S -> rightHand))
   }
 }
 
 class InvalidGrammarSyntax(msg: String) extends Exception(msg)
-
 
 object TestGrammar {
   def main(args: Array[String]): Unit = {

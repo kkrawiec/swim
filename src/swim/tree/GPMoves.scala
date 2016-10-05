@@ -6,6 +6,7 @@ import fuel.moves.Moves
 import fuel.func.SearchOperator
 import fuel.Preamble.RndApply
 import swim.Grammar
+import scala.collection.immutable.Seq
 
 /**
   * GPMoves provides the default set of GP operators.
@@ -13,12 +14,13 @@ import swim.Grammar
   *
   */
 case class GPMoves(grammar: Grammar, isFeasible: Op => Boolean = (_: Op) => true)(
-  implicit rng: TRandom,opt: Options)
+  implicit rng: TRandom, opt: Options)
     extends Moves[Op] {
   val initMaxTreeDepth = opt('initMaxTreeDepth, 5, (_: Int) > 0)
-  val cfPrograms = new CodeFactory(grammar, initMaxTreeDepth / 2, initMaxTreeDepth)
+  val stoppingDepthRatio = opt('stoppingDepthRatio, 0.8, ((x: Double) => x >= 0 && x < 1.0))
+  val cfPrograms = new CodeFactory(grammar, math.round(stoppingDepthRatio * initMaxTreeDepth).toInt, initMaxTreeDepth)
   val maxSubtreeDepth = opt('maxSubtreeDepth, 5, (_: Int) > 0)
-  val cfFragments = new CodeFactory(grammar, maxSubtreeDepth / 2, maxSubtreeDepth)
+  val cfFragments = new CodeFactory(grammar, math.round(stoppingDepthRatio * maxSubtreeDepth).toInt, maxSubtreeDepth)
   def ns = UniformNodeSelector(rng) // or: KozaNodeSelector(0.1)
 
   override def newSolution = cfPrograms.randomProgram

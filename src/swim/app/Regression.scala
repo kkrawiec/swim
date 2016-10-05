@@ -11,6 +11,7 @@ import swim.ProblemProvider
 import swim.Tests
 import swim.tree.ConstantProviderUniformI
 import swim.tree.Op
+import scala.collection.immutable.Seq
 
 case class FloatingPointDomain(override val numVars: Int) extends DomainWithVars[Seq[Double], Double, Op](numVars) {
   override def semantics(input: Seq[Double]) = {

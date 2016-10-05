@@ -1,6 +1,7 @@
 package swim
 
 import fuel.util.Options
+import scala.collection.immutable.Seq
 
 /* Domain defines program semantics. 
  * Programs cannot be executed on their own; it is Domain that executes them. 

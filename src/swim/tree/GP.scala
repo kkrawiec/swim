@@ -18,6 +18,7 @@ import swim.Test
 import swim.Domain
 import swim.Grammar
 import swim.eval.IFSEval
+import scala.collection.immutable.Seq
 
 /*
   * A class for realizing the workflow of the conventional 

@@ -12,7 +12,7 @@ import swim.tree.SimpleGP
 
 /* Simple example of evolving a program that calculates the minimum of a pair of numbers. 
  * The specification of grammar taken from the max2.sl problem used in the SyGuS contest 
- * (http://www.sygus.org)
+ * (http://www.sygus.org).
  */
 
 /* To enable type-sensitive pattern matching, *all* arguments of an instruction are evaluated
@@ -53,13 +53,13 @@ object Min2 extends IApp('maxGenerations -> 100) {
   //   like  ('+,('S, 'S))   or   '& -> ('SB, 'SB) below. 
   // Both terminals and nonterminals can be Any. 
   val grammar = Grammar(
-    'S -> Seq(
+    'S -> List(
       ConstantProviderUniformI(0, 1),
       'x, 'y,
       ('+, ('S, 'S)),
       ('-, ('S, 'S)),
       ('ite, ('SB, 'S, 'S))),
-    'SB -> Seq(
+    'SB -> List(
       '! -> 'SB,
       '& -> ('SB, 'SB),
       '<= -> ('S, 'S)))
@@ -82,7 +82,7 @@ object Min2 extends IApp('maxGenerations -> 100) {
 
 object Min2Efficiency extends IApp() {
   val grammar = Grammar(
-    'S -> Seq(
+    'S -> List(
       0, 1, 'x, 'y,
       '+ -> ('S, 'S),
       '- -> ('S, 'S),
