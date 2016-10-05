@@ -45,7 +45,8 @@ case class GPMoves(grammar: Grammar, isFeasible: Op => Boolean = (_: Op) => true
     (Replacer(p1, toSwap1, toSwap2), Replacer(p2, toSwap2, toSwap1))
   }
 
-  override def moves = Seq(SearchOperator(subtreeMutation, isFeasible),
+  override def moves = Seq(
+    SearchOperator(subtreeMutation, isFeasible),
     SearchOperator(treeSwappingCrossover, isFeasible))
 }
 
