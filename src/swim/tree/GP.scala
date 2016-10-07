@@ -44,7 +44,6 @@ class SimpleGP[I, O, E](moves: Moves[Op],
   override def algorithm = super.algorithm andThen checkSuccess
 }
 
-
 /* Convenience methods for creating instances of SimpleGP tailored
  * to different domains and classes of problems (e.g., discrete and continuous). 
  */
@@ -70,46 +69,58 @@ object SimpleGP {
   }
   def correctContinuous = (_: Any, e: Double) => e < 10e-9
 
-  def IFS[I, O](pprov: ProblemProvider[I, O, Op])(
-    implicit opt: Options, coll: Collector, rng: TRandom) = {
-    implicit val (grammar, domain, tests) = pprov(opt)
-    val moves = GPMoves(grammar, defaultFeasible)
-    new EACore[Op, IFSEval.Fitness](moves, IFSEval(tests, domain), correctIFS) {
-      val selection = TournamentSelection[Op, IFSEval.Fitness](new IFSEval.Ord)
-      override def iter = SimpleBreeder(selection, moves: _*) andThen evaluate
-    }
-  }
-  def correctIFS[I, O] = (_: Op, e: IFSEval.Fitness) => e.numFailedTests == 0
-
-  def Lexicase[I, O](pprov: ProblemProvider[I, O, Op])(
-    implicit opt: Options, coll: Collector, rng: TRandom): EACore[Op, Seq[Int]] = {
-    implicit val (grammar, domain, tests) = pprov(opt)
-    def eval(s: Op) = tests.map(t => if (domain(s)(t._1) == t._2) 0 else 1)
-    val moves = GPMoves(grammar, defaultFeasible)
-    Lexicase(moves, eval)
-  }
-
-  def Lexicase[I, O](moves: Moves[Op], eval: Op => Seq[Int])(
-    implicit opt: Options, coll: Collector, rng: TRandom) = {
-    new EACore(moves, ParallelEval(eval), correctLexicase) {
-      val selection = new LexicaseSelection[Op, Int](Ordering[Int])
-      //      val f = (s : StatePop[(PTree[I,O],Seq[Int])]) => { println(s.solutions.size); s }
-      override def iter = SimpleBreeder(selection, moves: _*) andThen evaluate
-
-      val checkSuccess = (s: StatePop[(Op, Seq[Int])]) => {
-        val cor = s.find(e => correctLexicase(e._1, e._2))
-        coll.setResult("successRate", if (cor.isDefined) 1.0 else 0.0)
-        coll.setResult("lastGeneration", it.count)
-        s
-      }
-      override def algorithm = super.algorithm andThen checkSuccess
-    }
-  }
-  def correctLexicase = (_: Any, e: Seq[Int]) => e.forall(_ == 0)
-
   def defaultFeasible(implicit opt: Options) = {
     val maxTreeDepth = opt('maxTreeDepth, 12, (_: Int) > 0)
     (p: Op) => p.height < maxTreeDepth
   }
-
 }
+
+/* Implicit fitness sharing
+ * 
+ */
+object IFSGP {
+  def apply[I, O](pprov: ProblemProvider[I, O, Op])(
+    implicit opt: Options, coll: Collector, rng: TRandom) = {
+    implicit val (grammar, domain, tests) = pprov(opt)
+    val moves = GPMoves(grammar, SimpleGP.defaultFeasible)
+    new EACore[Op, IFSEval.Fitness](moves, IFSEval(tests, domain), correct) {
+      val selection = TournamentSelection[Op, IFSEval.Fitness](new IFSEval.Ord)
+      override def iter = SimpleBreeder(selection, moves: _*) andThen evaluate
+    }
+  }
+  def correct[I, O] = (_: Op, e: IFSEval.Fitness) => e.numFailedTests == 0
+}
+
+/* Lexicase selection GP
+ * 
+ */
+object LexicaseGP {
+  def apply[I, O](pprov: ProblemProvider[I, O, Op])(
+    implicit opt: Options, coll: Collector, rng: TRandom): EACore[Op, Seq[Int]] = {
+    implicit val (grammar, domain, tests) = pprov(opt)
+    def eval(s: Op) = tests.map(t => if (domain(s)(t._1) == t._2) 0 else 1)
+    val moves = GPMoves(grammar, SimpleGP.defaultFeasible)
+    new LexicaseGP(moves, eval)
+  }
+  def correct = (_: Any, e: Seq[Int]) => e.forall(_ == 0)
+}
+
+class LexicaseGP[I, O](moves: Moves[Op], eval: Op => Seq[Int])(
+  implicit opt: Options, coll: Collector, rng: TRandom)
+    extends EACore(moves, ParallelEval(eval), LexicaseGP.correct) {
+  val selection = new LexicaseSelection[Op, Int](Ordering[Int])
+  //      val f = (s : StatePop[(PTree[I,O],Seq[Int])]) => { println(s.solutions.size); s }
+  override def iter = SimpleBreeder(selection, moves: _*) andThen evaluate
+
+  val checkSuccess = (s: StatePop[(Op, Seq[Int])]) => {
+    val cor = s.find(e => LexicaseGP.correct(e._1, e._2))
+    coll.setResult("successRate", if (cor.isDefined) 1.0 else 0.0)
+    coll.setResult("lastGeneration", it.count)
+    s
+  }
+  override def algorithm = super.algorithm andThen checkSuccess
+}
+
+
+
+

@@ -12,6 +12,8 @@ import fuel.util.OptColl
 import swim.Tests
 import scala.collection.immutable.Seq
 import swim.tree.GPMoves
+import swim.tree.LexicaseGP
+import swim.tree.IFSGP
 
 /* The examples below illustrate a few modes of launching a GP run, 
  * for discrete and continuous domains.  
@@ -67,11 +69,11 @@ object TestGPRegression extends IApp("--benchmark quartic --maxGenerations 100")
  * Lexicase and implicit fitness sharing.
  */
 object TestGPBoolL extends IApp('benchmark -> "mux6", 'maxGenerations -> 30, 'instructions -> "withNeg", 'printResults -> true) {
-  RunExperiment(SimpleGP.Lexicase(BooleanBenchmark()))
+  RunExperiment(LexicaseGP(BooleanBenchmark()))
 }
 
 object TestGPBoolISF extends IApp("--benchmark mux6 --maxGenerations 30 --instructions withNeg --printResults true") {
-  RunExperiment(SimpleGP.IFS(BooleanBenchmark()))
+  RunExperiment(IFSGP(BooleanBenchmark()))
 }
 
 /* Running GP on all benchmarks from a given domain
@@ -80,7 +82,7 @@ object TestGPBoolISF extends IApp("--benchmark mux6 --maxGenerations 30 --instru
 object TestGPBoolAll extends App {
   for (b <- BooleanBenchmark.allBenchmarks) {
     new OptColl('benchmark -> b, 'maxGenerations -> 100, 'printResults -> true) {
-      RunExperiment(SimpleGP.Lexicase(BooleanBenchmark()))
+      RunExperiment(LexicaseGP(BooleanBenchmark()))
     }
   }
 }
