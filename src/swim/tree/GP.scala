@@ -105,17 +105,20 @@ object LexicaseGP {
   def correct = (_: Any, e: Seq[Int]) => e.forall(_ == 0)
 }
 
-class LexicaseGP[I, O](moves: Moves[Op], eval: Op => Seq[Int])(
-  implicit opt: Options, coll: Collector, rng: TRandom)
-    extends EACore(moves, ParallelEval(eval), LexicaseGP.correct) {
+class LexicaseGP[I, O](moves: Moves[Op], eval: Op => Seq[Int],
+                       correct: (Op, Seq[Int]) => Boolean = LexicaseGP.correct)(
+                         implicit opt: Options, coll: Collector, rng: TRandom)
+    extends EACore(moves, ParallelEval(eval), correct) {
+
   val selection = new LexicaseSelection[Op, Int](Ordering[Int])
-  //      val f = (s : StatePop[(PTree[I,O],Seq[Int])]) => { println(s.solutions.size); s }
   override def iter = SimpleBreeder(selection, moves: _*) andThen evaluate
 
   val checkSuccess = (s: StatePop[(Op, Seq[Int])]) => {
-    val cor = s.find(e => LexicaseGP.correct(e._1, e._2))
+    val cor = s.find(e => correct(e._1, e._2))
     coll.setResult("successRate", if (cor.isDefined) 1.0 else 0.0)
     coll.setResult("lastGeneration", it.count)
+    if (cor.isDefined)
+      coll.setResult("correctProgram", cor.get)
     s
   }
   override def algorithm = super.algorithm andThen checkSuccess

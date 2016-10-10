@@ -46,3 +46,12 @@ object Tests {
   }
   private def b2s(b: Boolean) = if (b) 1 else 0
 }
+
+
+object TestTest {
+  def main(args: Array[String]): Unit = {
+    println( Test(Seq(3,1),8) == Test(Seq(3,1),8) )
+    println( Test(Seq(3,1),None) == Test(Seq(3,1),None) )
+    println( Test(Seq(3,1),None) == Test(Seq(3,1),Some(1)) )
+  }
+}
