@@ -2,7 +2,7 @@ package swim.tree
 
 import swim.Program
 
-/*
+/**
  * Op is a Program represented as an expression tree (or graph). 
  * Note that the Op class has no type parameters.
  * To enable type-aware manipulation, every Op stores the nonterminal symbol nt that was 
@@ -36,3 +36,63 @@ case class Op(val nt: Any, val op: Any, val args: Op*) extends Program {
   def setArgs(newArgs: Seq[Op]): Op = Op(this.nt, this.op, newArgs:_*)
 }
 
+
+/**
+ * NtOp represents an untyped expression tree. This class is a subclass of Op class with
+ * automatically assigned default type for convenience.
+ */
+class NtOp(op: Any, args: Op*) extends Op('default, op, args:_*) {}
+
+
+object NtOp {
+  def apply(op: Any, args: Op*): NtOp = new NtOp(op, args:_*)
+  
+  /**
+   * Constructs NtOp given it's string encoding in the form: OP(ARG1, ARG2, ...).
+   * For example from "+(-(a, b), c)" will be created NtOp("+", NtOp("-", NtOp("a"), NtOp("b")), NtOp("c")).
+   */
+  def fromStr(s: String): NtOp = {
+    def getStringOfFirstArg(s: String): (String, Int) = {
+      val iComa = s.indexOf(",")
+      val iPar = s.indexOf("(")
+      if (iComa == -1) // This is a single terminal - return whole string.
+        (s, s.size)
+      else if (iPar == -1 ||
+              (iPar != -1 && iComa < iPar))
+        // First argument is a terminal.
+        (s.substring(0, iComa), iComa)
+      else {
+        // First argument is a nonterminal. This is the most problematic case, because
+        // we have to reliably get content between it's opening and closing parenthesis.
+        var i = iPar + 1
+        var parOpened = 1
+        while (i < s.size && parOpened > 0) {
+          if (s(i) == ')') parOpened -= 1
+          else if (s(i) == '(') parOpened += 1
+          i += 1
+        }
+        (s.substring(0, i), i)
+      }
+    }
+    def getRawArgs(s: String): List[String] = {
+      val (firstArg, i) = getStringOfFirstArg(s)
+      if (i < s.size)
+        firstArg :: getRawArgs(s.substring(i+1))
+      else
+        List(firstArg)
+    }
+    try {
+      val i = s.indexOf("(")
+      if (i == -1) NtOp(s)  // Returning terminal.
+      else {
+        val op = s.substring(0, i)
+        val sargs = s.substring(i+1, s.size-1)
+        val rawArgs = getRawArgs(sargs)
+        val args = rawArgs.map{ a => fromStr(a.trim()) }
+        NtOp(op, args:_*)
+      }
+    } catch {
+      case _ => throw new Exception("Wrong encoding of NtOp instance!")
+    }
+  }
+}
