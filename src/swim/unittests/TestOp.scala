@@ -7,8 +7,8 @@ import swim.tree.NtOp
 
 final class TestOp {
   @Test def test_NtOp_fromStr_terminals() {
- 		assertEquals(NtOp("asd"), NtOp.fromStr("asd"))
- 		assertEquals(NtOp("5"), NtOp.fromStr("5"))
+    assertEquals(NtOp("asd"), NtOp.fromStr("asd"))
+    assertEquals(NtOp("5"), NtOp.fromStr("5"))
   }
   
   @Test def test_NtOp_fromStr_nonterminals_1() {
@@ -28,6 +28,6 @@ final class TestOp {
   
   @Test def test_NtOp_fromStr_nonterminals_4() {
     val op1 = NtOp.fromStr("+(a, --(b, *(c, d)))")
- 		assertEquals(NtOp("+", NtOp("a"), NtOp("--", NtOp("b"), NtOp("*", NtOp("c"), NtOp("d")))), op1)
+    assertEquals(NtOp("+", NtOp("a"), NtOp("--", NtOp("b"), NtOp("*", NtOp("c"), NtOp("d")))), op1)
   }
 }
