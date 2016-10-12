@@ -37,21 +37,16 @@ case class Op(val nt: Any, val op: Any, val args: Op*) extends Program {
 }
 
 
-/**
- * NtOp represents an untyped expression tree. This class is a subclass of Op class with
- * automatically assigned default type for convenience.
- */
-class NtOp(op: Any, args: Op*) extends Op('default, op, args:_*) {}
 
-
-object NtOp {
-  def apply(op: Any, args: Op*): NtOp = new NtOp(op, args:_*)
+object Op {
+  def apply(op: Any, args: Op*): Op = Op('default, op, args:_*)
   
   /**
-   * Constructs NtOp given it's string encoding in the form: OP(ARG1, ARG2, ...).
-   * For example from "+(-(a, b), c)" will be created NtOp("+", NtOp("-", NtOp("a"), NtOp("b")), NtOp("c")).
+   * Constructs Op given it's string encoding in the form: Op(ARG1, ARG2, ...).
+   * As nonterminal symbol assigned will be 'default.
+   * For example from "+(-(a, b), c)" will be created Op("+", Op("-", Op("a"), Op("b")), Op("c")).
    */
-  def fromStr(s: String): NtOp = {
+  def fromStr(s: String): Op = {
     def getStringOfFirstArg(s: String): (String, Int) = {
       val iComa = s.indexOf(",")
       val iPar = s.indexOf("(")
@@ -83,16 +78,16 @@ object NtOp {
     }
     try {
       val i = s.indexOf("(")
-      if (i == -1) NtOp(s)  // Returning terminal.
+      if (i == -1) Op(s)  // Returning terminal.
       else {
         val op = s.substring(0, i)
         val sargs = s.substring(i+1, s.size-1)
         val rawArgs = getRawArgs(sargs)
         val args = rawArgs.map{ a => fromStr(a.trim()) }
-        NtOp(op, args:_*)
+        Op(op, args:_*)
       }
     } catch {
-      case _ => throw new Exception("Wrong encoding of NtOp instance!")
+      case _ => throw new Exception("Wrong encoding of Op instance!")
     }
   }
 }
