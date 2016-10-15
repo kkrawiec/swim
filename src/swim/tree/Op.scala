@@ -54,7 +54,7 @@ object Op {
     def isBoolean(s: String): Boolean = if (s == "true" || s == "false") true else false
     def isInt(s: String): Boolean = try { val x = s.toInt; true } catch { case _ => false }
     def isDouble(s: String): Boolean = try { val x = s.toDouble; true } catch { case _ => false }
-    def isString(s: String): Boolean = if (s.last == '\"' && s.head == '\"') true else false
+    def isString(s: String): Boolean = if (s.head == '\"' && s.last == '\"') true else false
     def getTerminalOp(s: String): Any = {
       if (convertConsts)
         if (isBoolean(s)) s.toBoolean
