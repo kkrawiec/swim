@@ -61,7 +61,7 @@ object Op {
         else if (isInt(s)) s.toInt
         else if (isDouble(s)) s.toDouble
         else if (isString(s)) s.substring(1, s.size-1)
-        else Symbol(s) // return a symbol, most probably this a variable.
+        else Symbol(s)
       else
         Symbol(s)
     }
