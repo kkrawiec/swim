@@ -44,9 +44,27 @@ object Op {
   /**
    * Constructs Op given it's string encoding in the form: Op(ARG1, ARG2, ...).
    * As nonterminal symbol assigned will be 'default.
-   * For example from "+(-(a, b), c)" will be created Op("+", Op("-", Op("a"), Op("b")), Op("c")).
+   * For example from "+(-(a, b), c)" will be created Op('+, Op('-, Op('a), Op('b)), Op('c)).
+   * 
+   * @param s string encoding of op.
+   * @param convertConsts if set to true (default), terminals detected as Boolean, Int, Double or
+   * String constants will be converted to instances of those types.
    */
-  def fromStr(s: String): Op = {
+  def fromStr(s: String, convertConsts: Boolean = true): Op = {
+    def isBoolean(s: String): Boolean = if (s == "true" || s == "false") true else false
+    def isInt(s: String): Boolean = try { val x = s.toInt; true } catch { case _ => false }
+    def isDouble(s: String): Boolean = try { val x = s.toDouble; true } catch { case _ => false }
+    def isString(s: String): Boolean = if (s.last == '\"' && s.head == '\"') true else false
+    def getTerminalOp(s: String): Any = {
+      if (convertConsts)
+        if (isBoolean(s)) s.toBoolean
+        else if (isInt(s)) s.toInt
+        else if (isDouble(s)) s.toDouble
+        else if (isString(s)) s.substring(1, s.size-1)
+        else Symbol(s) // return a symbol, most probably this a variable.
+      else
+        Symbol(s)
+    }
     def getStringOfFirstArg(s: String): (String, Int) = {
       val iComa = s.indexOf(",")
       val iPar = s.indexOf("(")
@@ -71,20 +89,17 @@ object Op {
     }
     def getRawArgs(s: String): List[String] = {
       val (firstArg, i) = getStringOfFirstArg(s)
-      if (i < s.size)
-        firstArg :: getRawArgs(s.substring(i+1))
-      else
-        List(firstArg)
+      if (i < s.size) firstArg :: getRawArgs(s.substring(i+1))
+      else List(firstArg)
     }
     try {
       val i = s.indexOf("(")
-      if (i == -1) Op(s)  // Returning terminal.
+      if (i == -1) Op(getTerminalOp(s))  // Returning terminal.
       else {
         val op = s.substring(0, i)
         val sargs = s.substring(i+1, s.size-1)
-        val rawArgs = getRawArgs(sargs)
-        val args = rawArgs.map{ a => fromStr(a.trim()) }
-        Op(op, args:_*)
+        val args = getRawArgs(sargs).map{ a => fromStr(a.trim()) }
+        Op(Symbol(op), args:_*)
       }
     } catch {
       case _ => throw new Exception("Wrong encoding of Op instance!")
