@@ -49,11 +49,12 @@ object Op {
    * @param s string encoding of op.
    * @param convertConsts if set to true (default), terminals detected as Boolean, Int, Double or
    * String constants will be converted to instances of those types.
+   * @param delim delimiter which separates arguments of functions (default: " ").
    */
-  def fromStr(s: String, convertConsts: Boolean = true): Op = {
+  def fromStr(s: String, delim: String = " ", convertConsts: Boolean = true): Op = {
     def isBoolean(s: String): Boolean = if (s == "true" || s == "false") true else false
-    def isInt(s: String): Boolean = try { val x = s.toInt; true } catch { case _ => false }
-    def isDouble(s: String): Boolean = try { val x = s.toDouble; true } catch { case _ => false }
+    def isInt(s: String): Boolean = try { val x = s.toInt; true } catch { case _:Throwable => false }
+    def isDouble(s: String): Boolean = try { val x = s.toDouble; true } catch { case _:Throwable => false }
     def isString(s: String): Boolean = if (s.head == '\"' && s.last == '\"') true else false
     def getTerminalOp(s: String): Any = {
       if (convertConsts)
@@ -66,7 +67,7 @@ object Op {
         Symbol(s)
     }
     def getStringOfFirstArg(s: String): (String, Int) = {
-      val iComa = s.indexOf(",")
+      val iComa = s.indexOf(delim)
       val iPar = s.indexOf("(")
       if (iComa == -1) // This is a single terminal - return whole string.
         (s, s.size)
@@ -98,11 +99,11 @@ object Op {
       else {
         val op = s.substring(0, i)
         val sargs = s.substring(i+1, s.size-1)
-        val args = getRawArgs(sargs).map{ a => fromStr(a.trim()) }
+        val args = getRawArgs(sargs).map{ a => fromStr(a.trim(), delim, convertConsts) }
         Op(Symbol(op), args:_*)
       }
     } catch {
-      case _ => throw new Exception("Wrong encoding of Op instance!")
+      case _:Throwable => throw new Exception("Wrong encoding of Op instance!")
     }
   }
 }
