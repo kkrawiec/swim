@@ -16,8 +16,8 @@ import scala.collection.immutable.Seq
 case class GPMoves(grammar: Grammar, isFeasible: Op => Boolean = (_: Op) => true)(
   implicit rng: TRandom, opt: Options)
     extends Moves[Op] {
-  val initMaxTreeDepth = opt('initMaxTreeDepth, 5, (_: Int) > 0)
-  val stoppingDepthRatio = opt('stoppingDepthRatio, 0.8, ((x: Double) => x >= 0 && x < 1.0))
+  val initMaxTreeDepth = opt('initMaxTreeDepth, 5, (_: Int) >= 0)
+  val stoppingDepthRatio = opt('stoppingDepthRatio, 0.8, ((x: Double) => x >= 0 && x <= 1.0))
   val cfPrograms = new CodeFactory(grammar, math.round(stoppingDepthRatio * initMaxTreeDepth).toInt, initMaxTreeDepth)
   val maxSubtreeDepth = opt('maxSubtreeDepth, 5, (_: Int) > 0)
   val cfFragments = new CodeFactory(grammar, math.round(stoppingDepthRatio * maxSubtreeDepth).toInt, maxSubtreeDepth)
