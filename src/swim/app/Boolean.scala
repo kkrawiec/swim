@@ -32,7 +32,14 @@ case class BooleanDomain(override val numVars: Int) extends DomainWithVars[Seq[B
     }
   }
 }
-
+case object BooleanDomain {
+  def instructionSet(name: String) = name match {
+    case "and"      => Map(2 -> List('&))
+    case "andOrNeg" => Map(1 -> List('!), 2 -> List('&, '|))
+    case "default"  => Map(2 -> List('&, '|, '!&, '!|))
+    case "withNeg"  => Map(1 -> List('!), 2 -> List('&, '|, '!&, '!|))
+  }
+}
 
 /* Some popular Boolean function synthesis benchmarks.
  * See http://gpbenchmarks.org/ for more. 
@@ -54,12 +61,8 @@ case class BooleanBenchmark(implicit rng: TRandom) extends ProblemProvider[Seq[B
     val tests = Tests(testGenerator, numVars)
     assert(tests.size == 1 << numVars, "numVars inconsistent with test generator")
 
-    val instrSet = (conf.paramString("instructions", "default") match {
-      case "and"      => Map(2 -> List('&))
-      case "andOrNeg" => Map(1 -> List('!), 2 -> List('&, '|))
-      case "default"  => Map(2 -> List('&, '|, '!&, '!|))
-      case "withNeg"  => Map(1 -> List('!), 2 -> List('&, '|, '!&, '!|))
-    }) + (0 -> List(ConstantProviderUniformI(0, numVars - 1))) // input variables
+    val instrSet = BooleanDomain.instructionSet(conf.paramString("instructions", "default")) +
+     (0 -> List(ConstantProviderUniformI(0, numVars - 1))) // input variables
     (Grammar.fromSingleTypeInstructions(instrSet), BooleanDomain(numVars), tests)
   }
 }

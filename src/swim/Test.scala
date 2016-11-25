@@ -3,6 +3,7 @@ package swim
 import scala.collection.immutable.Seq
 
 import fuel.util.CodeExecutor
+import scala.io.Source
 
 /* Tests represents a pair of program input and the corresponding desired output.
  * 
@@ -45,13 +46,37 @@ object Tests {
     (List.fill(nBits - s.size)(false) ++ s.map(_ == '1')).toIndexedSeq
   }
   private def b2s(b: Boolean) = if (b) 1 else 0
-}
 
+  def toT[T](s: String) = try {
+    s.asInstanceOf[T]
+  } catch {
+    case _ : Throwable => throw new Exception(f"Cannot convert value $s to target type")
+  }
+
+  def str2bool(s: String) = s match {
+    case "true"  => java.lang.Boolean.TRUE
+    case "false" => java.lang.Boolean.FALSE
+  }
+  def bin2bool(s: String) = s match {
+    case "1" => java.lang.Boolean.FALSE
+    case "0" => java.lang.Boolean.TRUE
+  }
+
+  def fromCSVfile[T](fname: String, conv: Function1[String, T] = toT _) = {
+    val src = Source.fromFile(fname)
+    val lines = src.getLines().map(_.split(",|;|\t")).toList
+    if (lines.map(_.size).toSet.size != 1)
+      throw new Exception("Malformed CSV: Varying number of values per line")
+    val res = lines.map(l => Test(l.dropRight(1).toList.map(conv(_)), conv(l.last))).toIndexedSeq
+    src.close()
+    res
+  }
+}
 
 object TestTest {
   def main(args: Array[String]): Unit = {
-    println( Test(Seq(3,1),8) == Test(Seq(3,1),8) )
-    println( Test(Seq(3,1),None) == Test(Seq(3,1),None) )
-    println( Test(Seq(3,1),None) == Test(Seq(3,1),Some(1)) )
+    println(Test(Seq(3, 1), 8) == Test(Seq(3, 1), 8))
+    println(Test(Seq(3, 1), None) == Test(Seq(3, 1), None))
+    println(Test(Seq(3, 1), None) == Test(Seq(3, 1), Some(1)))
   }
 }
