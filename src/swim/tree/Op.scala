@@ -3,12 +3,12 @@ package swim.tree
 import swim.Program
 
 /**
-  * Op is a Program represented as an expression tree (or graph).
-  * Note that the Op class has no type parameters.
-  * To enable type-aware manipulation, every Op stores the nonterminal symbol nt that was
-  * used by the underlying grammar to generate that Op.
-  * op represents Op's opcode.
-  */
+ * Op is a Program represented as an expression tree (or graph). 
+ * Note that the Op class has no type parameters.
+ * To enable type-aware manipulation, every Op stores the nonterminal symbol nt that was 
+ * used by the underlying grammar to generate that Op. 
+ * op represents Op's opcode. 
+ */
 
 case class Op(val nt: Any, val op: Any, val args: Op*) extends Program {
   override def hashCode = op.## ^ nt.## ^ args.##
@@ -33,43 +33,46 @@ case class Op(val nt: Any, val op: Any, val args: Op*) extends Program {
   def contains(theOp: Any): Boolean =
     if (op == theOp) true
     else args.exists { child => child.contains(theOp) }
-  def setArgs(newArgs: Seq[Op]): Op = Op(this.nt, this.op, newArgs: _*)
+  def setArgs(newArgs: Seq[Op]): Op = Op(this.nt, this.op, newArgs:_*)
 }
 
-object Op {
-  def apply(op: Any, args: Op*): Op = Op('default, op, args: _*)
 
+
+object Op {
+  def apply(op: Any, args: Op*): Op = Op('default, op, args:_*)
+  
   /**
-    * Constructs Op given it's string encoding in the form: Op(ARG1, ARG2, ...).
-    * As nonterminal symbol assigned will be 'default.
-    * For example from "+(-(a, b), c)" will be created Op('+, Op('-, Op('a), Op('b)), Op('c)).
-    *
-    * @param s string encoding of op.
-    * @param convertConsts if set to true (default), terminals detected as Boolean, Int, Double or
-    * String constants will be converted to instances of those types.
-    */
-  def fromStr(s: String, convertConsts: Boolean = true): Op = {
-    def isBoolean(s: String) = s == "true" || s == "false"
-    def isInt(s: String) = try { s.toInt; true } catch { case _ => false }
-    def isDouble(s: String) = try { s.toDouble; true } catch { case _ => false }
-    def isString(s: String) = s.head == '\"' && s.last == '\"'
+   * Constructs Op given it's string encoding in the form: Op(ARG1, ARG2, ...).
+   * As nonterminal symbol assigned will be 'default.
+   * For example from "+(-(a, b), c)" will be created Op('+, Op('-, Op('a), Op('b)), Op('c)).
+   * 
+   * @param s string encoding of op.
+   * @param convertConsts if set to true (default), terminals detected as Boolean, Int, Double or
+   * String constants will be converted to instances of those types.
+   * @param delim delimiter which separates arguments of functions (default: " ").
+   */
+  def fromStr(s: String, delim: String = " ", convertConsts: Boolean = true): Op = {
+    def isBoolean(s: String): Boolean = if (s == "true" || s == "false") true else false
+    def isInt(s: String): Boolean = try { val x = s.toInt; true } catch { case _:Throwable => false }
+    def isDouble(s: String): Boolean = try { val x = s.toDouble; true } catch { case _:Throwable => false }
+    def isString(s: String): Boolean = if (s.head == '\"' && s.last == '\"') true else false
     def getTerminalOp(s: String): Any = {
       if (convertConsts)
         if (isBoolean(s)) s.toBoolean
         else if (isInt(s)) s.toInt
         else if (isDouble(s)) s.toDouble
-        else if (isString(s)) s.substring(1, s.size - 1)
+        else if (isString(s)) s.substring(1, s.size-1)
         else Symbol(s)
       else
         Symbol(s)
     }
     def getStringOfFirstArg(s: String): (String, Int) = {
-      val iComa = s.indexOf(",")
+      val iComa = s.indexOf(delim)
       val iPar = s.indexOf("(")
       if (iComa == -1) // This is a single terminal - return whole string.
         (s, s.size)
       else if (iPar == -1 ||
-        (iPar != -1 && iComa < iPar))
+              (iPar != -1 && iComa < iPar))
         // First argument is a terminal.
         (s.substring(0, iComa), iComa)
       else {
@@ -87,20 +90,20 @@ object Op {
     }
     def getRawArgs(s: String): List[String] = {
       val (firstArg, i) = getStringOfFirstArg(s)
-      if (i < s.size) firstArg :: getRawArgs(s.substring(i + 1))
+      if (i < s.size) firstArg :: getRawArgs(s.substring(i+1))
       else List(firstArg)
     }
     try {
       val i = s.indexOf("(")
-      if (i == -1) Op(getTerminalOp(s)) // Returning terminal.
+      if (i == -1) Op(getTerminalOp(s))  // Returning terminal.
       else {
         val op = s.substring(0, i)
-        val sargs = s.substring(i + 1, s.size - 1)
-        val args = getRawArgs(sargs).map { a => fromStr(a.trim()) }
-        Op(Symbol(op), args: _*)
+        val sargs = s.substring(i+1, s.size-1)
+        val args = getRawArgs(sargs).map{ a => fromStr(a.trim(), delim, convertConsts) }
+        Op(Symbol(op), args:_*)
       }
     } catch {
-      case _ => throw new Exception("Wrong encoding of Op instance!")
+      case _:Throwable => throw new Exception("Wrong encoding of Op instance!")
     }
   }
 }

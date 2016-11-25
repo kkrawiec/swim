@@ -17,23 +17,27 @@ final class TestOp {
   }
   
   @Test def test_Op_fromStr_nonterminals_1() {
-    val op1 = Op.fromStr("+(a, b)")
+    val op1 = Op.fromStr("+(a b)")
     assertEquals(Op('+, Op('a), Op('b)), op1)
   }
   
   @Test def test_Op_fromStr_nonterminals_2() {
-    val op1 = Op.fromStr("+(-(a),*(b,c))")
+    val op1 = Op.fromStr("+(-(a), *(b, c))", ", ")
     assertEquals(Op('+, Op('-, Op('a)), Op('*, Op('b), Op('c))), op1)
+    val op2 = Op.fromStr("+(-(a),*(b,c))", ",")
+    assertEquals(Op('+, Op('-, Op('a)), Op('*, Op('b), Op('c))), op2)
+    val op3 = Op.fromStr("+(-(a) *(b c))", " ")
+    assertEquals(Op('+, Op('-, Op('a)), Op('*, Op('b), Op('c))), op3)
   }
   
   @Test def test_Op_fromStr_nonterminals_3() {
-    val op1 = Op.fromStr("+(-(*(ab, cd), ef), gh)")
+    val op1 = Op.fromStr("+(-(*(ab, cd), ef), gh)", delim = ", ")
     assertEquals(Op('+, Op('-, Op('*, Op('ab), Op('cd)), Op('ef)), Op('gh)), op1)
   }
   
   @Test def test_Op_fromStr_nonterminals_4() {
-    val opT = Op.fromStr("+(a, --(b, *(c, d)))", convertConsts=true)
-    val opF = Op.fromStr("+(a, --(b, *(c, d)))", convertConsts=false)
+    val opT = Op.fromStr("+(a, --(b, *(c, d)))", delim = ", ")
+    val opF = Op.fromStr("+(a, --(b, *(c, d)))", delim = ", ")
     assertEquals(Op('+, Op('a), Op('--, Op('b), Op('*, Op('c), Op('d)))), opT)
     assertEquals(opT, opF)
   }
