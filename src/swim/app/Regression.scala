@@ -40,12 +40,9 @@ case class FloatingPointDomain(override val numVars: Int) extends DomainWithVars
   }
 }
 
-/* Typical instruction sets used in symbolic regression. 
- * 
- */
-object RegressionInstructionSets extends Function1[String, Map[Int, List[Symbol]]] {
+case object FloatingPointDomain {
   val arithm = List('+, '-, '*, '/)
-  def apply(name: String) = name match {
+  def instructionSet(name: String) = name match {
     case "default"     => Map(2 -> arithm)
     case "withTransc"  => Map(1 -> List('sin, 'cos, 'exp, 'lg, 'neg), 2 -> arithm)
     case "withNonTrig" => Map(1 -> List('sig, 'exp, 'lg, '-, 'n), 2 -> arithm)
@@ -70,7 +67,7 @@ case class RegressionBenchmark(implicit rng: TRandom) extends ProblemProvider[Se
       "nguy6" -> (1, g(-1, 1, 0.1).map(x => (Seq(x), math.sin(x) + math.sin(x * x + x)))),
       "nguy7" -> (1, g(0, 2, 0.1).map(x => (Seq(x), math.log(x + 1) + math.log(x * x + 1.0)))))
     val (v, gg) = bench(conf.paramString("benchmark"))
-    val instrSet = RegressionInstructionSets(conf.paramString("instructions", "default")) +
+    val instrSet = FloatingPointDomain.instructionSet(conf.paramString("instructions", "default")) +
       (0 -> List(ConstantProviderUniformI(0, v - 1))) // input variables
     (Grammar.fromSingleTypeInstructions(instrSet), FloatingPointDomain(v), Tests(gg.toIndexedSeq))
   }

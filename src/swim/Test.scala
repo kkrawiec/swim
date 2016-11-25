@@ -61,10 +61,12 @@ object Tests {
     case "1" => java.lang.Boolean.FALSE
     case "0" => java.lang.Boolean.TRUE
   }
+  def str2double(s: String) = s.toDouble
+  def str2int(s: String) = s.toInt
 
   def fromCSVfile[T](fname: String, conv: Function1[String, T] = toT _) = {
     val src = Source.fromFile(fname)
-    val lines = src.getLines().map(_.split(",|;|\t")).toList
+    val lines = src.getLines().map(_.split(",|;|\t|\\s+")).toList
     if (lines.map(_.size).toSet.size != 1)
       throw new Exception("Malformed CSV: Varying number of values per line")
     val res = lines.map(l => Test(l.dropRight(1).toList.map(conv(_)), conv(l.last))).toIndexedSeq
