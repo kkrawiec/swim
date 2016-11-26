@@ -42,7 +42,7 @@ class LexicaseSelection[S, E](o: Ordering[E])(implicit rand: TRandom)
 
 /** EXPERIMENTAL
  *  TODO: E is dummy here; ideally, this should be rewritten without E whatsoever, 
- *  but this requires redefinition of Seleciton trait
+ *  but this requires redefinition of Selection trait
  */
 
 class LexicaseSelectionNoEval[S,E](o: Seq[Ordering[S]])(implicit rand: TRandom)
