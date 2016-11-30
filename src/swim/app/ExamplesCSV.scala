@@ -11,13 +11,16 @@ import swim.tree.ConstantProviderUniformI
 import swim.tree.GPMoves
 import swim.tree.Op
 import swim.tree.SimpleGP
+import fuel.util.Options
+import fuel.util.Rng
+import fuel.util.CollectorStdout
 
-object BooleanProblemFromCSV extends IApp(
-  'maxGenerations -> 20, 'populationSize -> 100,
-  'csvFile -> "booleanEx1.csv",
-  'parEval -> false // multithreaded evaluation off
-  ) {
-
+object BooleanProblemFromCSV extends App {
+  val defaultOpts = Options('maxGenerations -> 20, 'populationSize -> 100, 'csvFile -> "booleanEx1.csv", 'parEval -> false /*multithreaded evaluation off*/)
+  implicit val opt = if (this.args.size == 0) defaultOpts else Options(this.args)
+  implicit val rng = Rng(opt)
+  implicit val coll = CollectorStdout(opt)
+  
   val fname = opt.getOption("csvFile").get
   val tests = Tests.fromCSVfile[Boolean](fname, Tests.str2bool)
   //val tests = Tests.fromCSVfile[Boolean](fname, Tests.bin2bool)
@@ -38,16 +41,15 @@ object BooleanProblemFromCSV extends IApp(
   // launch the GP run
   RunExperiment(new SimpleGP(GPMoves(grammar, SimpleGP.defaultFeasible),
     eval, SimpleGP.correctDiscrete))
-  println("Finished")
 }
 
 
-object RegressionProblemFromCSV extends IApp(
-  'maxGenerations -> 20, 'populationSize -> 100,
-  'csvFile -> "regressionEx1.csv",
-  'parEval -> false // multithreaded evaluation off
-  ) {
-
+object RegressionProblemFromCSV extends App {
+  val defaultOpts = Options('maxGenerations -> 20, 'populationSize -> 100, 'csvFile -> "regressionEx1.csv", 'parEval -> false /*multithreaded evaluation off*/)
+  implicit val opt = if (this.args.size == 0) defaultOpts else Options(this.args)
+  implicit val rng = Rng(opt)
+  implicit val coll = CollectorStdout(opt)
+  
   val fname = opt.getOption("csvFile").get
   val tests = Tests.fromCSVfile[Double](fname, Tests.str2double)
   assume(tests.nonEmpty)
@@ -67,5 +69,4 @@ object RegressionProblemFromCSV extends IApp(
   // launch the GP run
   RunExperiment(new SimpleGP(GPMoves(grammar, SimpleGP.defaultFeasible),
     eval, SimpleGP.correctDiscrete))
-  println("Finished")
 }
