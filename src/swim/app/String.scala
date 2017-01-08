@@ -12,6 +12,8 @@ import swim.tree.SimpleGP
 
 case object StringDomain extends Domain[String, String, Op] {
   type CharPred = Char => Boolean
+  type CharTrans = Char => Char // character transformer
+  type Char2Trans = (Char, Char) => Char // character transformer
   override def semantics(input: String) = {
     val l = input.size
     new Function1[Op, Any] {
@@ -23,50 +25,79 @@ case object StringDomain extends Domain[String, String, Op] {
           case Seq('tail, s: String)                   => if (s.size > 0) s.substring(1) else ""
           case Seq('++, s: String, r: String)          => s ++ r
           case Seq('size, s: String)                   => s.size
-          case Seq('char, pos: Int)                    => if (input.size > 0) input.charAt(pos % l).toString else ""
           case Seq('takeWhile, s: String, p: CharPred) => s.takeWhile { p }
+          case Seq('dropWhile, s: String, p: CharPred) => s.dropWhile { p }
+
           case Seq('isDigit)                           => ((c: Char) => c.isDigit)
           case Seq('isAlpha)                           => ((c: Char) => c.isLetter)
-          case Seq('isSpace)                           => ((c: Char) => c == ' ')
+          case Seq('isSpace)                           => ((c: Char) => c.isSpaceChar)
+          case Seq('isAlphaOrDigit)                    => ((c: Char) => c.isLetterOrDigit)
+          case Seq('isLower)                           => ((c: Char) => c.isLower)
+          case Seq('isUpper)                           => ((c: Char) => c.isUpper)
           case Seq('notPred, p: CharPred)              => p.andThen { !_ }
           case Seq('andPred, p: CharPred, r: CharPred) => ((c: Char) => p(c) && r(c))
           case Seq('orPred, p: CharPred, r: CharPred)  => ((c: Char) => p(c) || r(c))
-          case Seq('input)                             => input
-          case Seq(v: String)                          => v
-          case Seq('+, x: Int, y: Int)                 => x + y
-          case Seq(v: Int)                             => v
-          case _                                       => throw new Exception("Invalid instruction or arguments: " + op.op + " " + childRes)
+          case Seq('xorPred, p: CharPred, r: CharPred) => ((c: Char) => p(c) != r(c))
+
+          case Seq('map, s: String, t: CharTrans)      => s.map { t }
+          case Seq('toLower)                           => ((c: Char) => c.toLower)
+          case Seq('toUpper)                           => ((c: Char) => c.toUpper)
+
+          case Seq('reduce, s: String, t: Char2Trans)  => if (s.size < 2) "" else s.reduce { t }.toString
+          case Seq('fold, s: String, c: Char, t: Char2Trans) =>
+            s.fold(c) { t }.toString
+          case Seq('maxChar)           => ((c: Char, d: Char) => Math.max(c, d).toChar)
+          case Seq('minChar)           => ((c: Char, d: Char) => Math.min(c, d).toChar)
+
+          case Seq('istr)              => input
+          case Seq('ichar, pos: Int)   => if (input.size > 0) input.charAt(pos % l).toString else ""
+          case Seq(v: String)          => v
+          case Seq('+, x: Int, y: Int) => x + y
+          case Seq(v: Int)             => v
+          case Seq(v: Char)            => v
+          case _                       => throw new Exception("Invalid instruction: " + op + " or arguments: " + childRes)
         }
       }
     }
   }
 }
 
-object StringDomainTest extends IApp('maxGenerations -> 100) { // 'parEval -> false 
-  // The left-hand side symbol in the first production of the grammar (here: 'str) 
-  // becomes the starting symbol: 
-  val grammar = Grammar(
+object StringDomainTest extends IApp('maxGenerations -> 100, 'initMaxTreeDepth -> 20) { // 'parEval -> false 
+  val grammar = Grammar('str, // initial symbol of the grammar
     'str -> Seq(
       'head -> 'str,
       'tail -> 'str,
       '++ -> ('str, 'str),
       'takeWhile -> ('str, 'charPred),
-      'char -> 'int, // a single character in the input string
-      'input, // input string
-      "some constant string",
-      "another constant string"),
+      'dropWhile -> ('str, 'charPred),
+      'map -> ('str, 'charTrans),
+      'reduce -> ('str, 'char2Trans),
+      'fold -> ('str, 'char, 'char2Trans),
+      'ichar -> 'int, // a single character in the input string
+      'istr, // entire input string
+      "some constant string"),
     'int -> Seq(
       'size -> 'str,
       '+ -> ('int, 'int),
       0, 1, 2 // integer constants
       ),
     'charPred -> Seq(
-      'isDigit, 'isAlpha, 'isSpace,
+      'isDigit, 'isAlpha, 'isSpace, 'isAlphaOrDigit, 'isLower, 'isUpper,
       'notPred -> 'charPred,
       'andPred -> ('charPred, 'charPred),
-      'orPred -> ('charPred, 'charPred)))
+      'orPred -> ('charPred, 'charPred),
+      'xorPred -> ('charPred, 'charPred)),
+    'char -> Seq(
+      ' ', 'a'),
+    'charTrans -> Seq(
+      'toLower, 'toUpper),
+    'char2Trans -> Seq(
+      'maxChar, 'minChar))
 
-  { // Task 1: prepend the string with its second character
+  print(grammar)
+
+  {
+    println("Task 1: prepend the string with its second character")
     val tests = Seq(
       Test("aba", "baba"),
       Test("acka", "cacka"),
@@ -74,7 +105,8 @@ object StringDomainTest extends IApp('maxGenerations -> 100) { // 'parEval -> fa
     RunExperiment(SimpleGP.Discrete(grammar, StringDomain, tests))
   }
 
-  { // Task 2: reverse the input string
+  {
+    println("Task 2: reverse the input string")
     val tests = Seq(
       Test("", ""),
       Test("a", "a"),
@@ -84,7 +116,8 @@ object StringDomainTest extends IApp('maxGenerations -> 100) { // 'parEval -> fa
       Test("fox", "xof"))
     RunExperiment(SimpleGP.Discrete(grammar, StringDomain, tests))
   }
-  { // Task 3: return substring ending before the first space
+  {
+    println("Task 3: return substring ending before the first space")
     val tests = Seq(
       Test("", ""),
       Test("a ", "a"),
@@ -93,5 +126,17 @@ object StringDomainTest extends IApp('maxGenerations -> 100) { // 'parEval -> fa
       Test("acka macka", "acka"),
       Test(" fox", ""))
     RunExperiment(SimpleGP.Discrete(grammar, StringDomain, tests))
-  }}
+  }
+  {
+    println("Task 4: toUpper over strings")
+    val tests = Seq(
+      Test("", ""),
+      Test("a ", "A "),
+      Test("ab baa baa", "AB BAA BAA"),
+      Test("abc ", "ABC "),
+      Test("acka macka", "ACKA MACKA"),
+      Test(" fox", " FOX"))
+    RunExperiment(SimpleGP.Discrete(grammar, StringDomain, tests))
+  }
+}
 
