@@ -18,22 +18,36 @@ case object StringDomain extends Domain[String, String, Op] {
     val l = input.size
     new Function1[Op, Any] {
       def apply(op: Op): Any = {
+        
+        def isValidIndex(i: Int, s: String) = i >= 0 && i < s.length
+        def protectedIndex(i: Int, s: String): Int = {
+          val n = s.length
+          (i % n + n) % n
+        } ensuring { isValidIndex(_,s) }
+        def protectedRange(i: Int, j: Int, s: String): (Int,Int) = {
+          val pi = protectedIndex(i,s)
+          val pj = protectedIndex(j,s)
+          (math.min(pi,pj),math.max(pi,pj))
+        }
+        
         // Needs toList (otherwise ArrayBuffer, which doesn't work with pattern matching)
         val childRes = op.args.toSeq.map(c => apply(c)).toList
         childRes.+:(op.op) match {
-          case Seq('head, s: String)                   => if (s.size > 0) s.substring(0, 1) else ""
-          case Seq('tail, s: String)                   => if (s.size > 0) s.substring(1) else ""
+          case Seq('head, s: String)                   => if ( s.isEmpty ) "" else s.head.toString
+          case Seq('tail, s: String)                   => if ( s.isEmpty ) "" else s.tail
           case Seq('++, s: String, r: String)          => s ++ r
           case Seq('size, s: String)                   => s.size
           case Seq('takeWhile, s: String, p: CharPred) => s.takeWhile { p }
           case Seq('dropWhile, s: String, p: CharPred) => s.dropWhile { p }
-
+          case Seq('substr1, s: String, i: Int) => if( s.isEmpty ) "" else s.substring(protectedIndex(i,s))
+          case Seq('substr2, s: String, i: Int, j: Int) => if( s.isEmpty ) "" else { val r = protectedRange( i, j, s ); s.substring(r._1,r._2) }          
           case Seq('isDigit)                           => ((c: Char) => c.isDigit)
           case Seq('isAlpha)                           => ((c: Char) => c.isLetter)
           case Seq('isSpace)                           => ((c: Char) => c.isSpaceChar)
           case Seq('isAlphaOrDigit)                    => ((c: Char) => c.isLetterOrDigit)
           case Seq('isLower)                           => ((c: Char) => c.isLower)
           case Seq('isUpper)                           => ((c: Char) => c.isUpper)
+          case Seq('isPunct)                           => ((c: Char) => "!\"#$%&'()*+,-./:;<=>?@[\\]^_`{|}~".contains( c ) )
           case Seq('notPred, p: CharPred)              => p.andThen { !_ }
           case Seq('andPred, p: CharPred, r: CharPred) => ((c: Char) => p(c) && r(c))
           case Seq('orPred, p: CharPred, r: CharPred)  => ((c: Char) => p(c) || r(c))
@@ -50,9 +64,12 @@ case object StringDomain extends Domain[String, String, Op] {
           case Seq('minChar)           => ((c: Char, d: Char) => Math.min(c, d).toChar)
 
           case Seq('istr)              => input
-          case Seq('ichar, pos: Int)   => if (input.size > 0) input.charAt(pos % l).toString else ""
+          case Seq('ichar, pos: Int)   => if (input.size > 0) input.charAt(protectedIndex(pos,input)).toString else ""
           case Seq(v: String)          => v
           case Seq('+, x: Int, y: Int) => x + y
+          case Seq('-, x: Int, y: Int) => x - y
+          case Seq('*, x: Int, y: Int) => x * y
+          case Seq('/, x: Int, y: Int) => if( y == 0 ) 0 else x / y          
           case Seq(v: Int)             => v
           case Seq(v: Char)            => v
           case _                       => throw new Exception("Invalid instruction: " + op + " or arguments: " + childRes)
