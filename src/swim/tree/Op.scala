@@ -39,7 +39,8 @@ case class Op(val nt: Any, val op: Any, val args: Op*) extends Program {
 
 
 object Op {
-  def apply(op: Any, args: Op*): Op = Op('default, op, args:_*)
+  val NT_DEFAULT = 'default
+  def apply(op: Any, args: Op*): Op = Op(NT_DEFAULT, op, args:_*)
   
   /**
    * Constructs Op given it's string encoding in the form: Op(ARG1, ARG2, ...).

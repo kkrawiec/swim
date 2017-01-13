@@ -55,7 +55,7 @@ case class Grammar( startNT: Any, g: Map[Any, Seq[Any]]) {
     }
   }.flatten
   assume(wrongRHSs.isEmpty,
-    f"All nonterminals on the righ-hand sides have to have productions starting with them. These don't: ${wrongRHSs}")
+    f"All nonterminals on the right-hand sides have to have productions starting with them. These don't: ${wrongRHSs}")
 
   // A subset of productions that have no nonterminals in their RHSs
   val terminalProductions = allProductions.filter(_._2.hasTerminalRHs)
