@@ -20,28 +20,28 @@ class CodeFactory(val grammar: Grammar, stoppingDepth: Int, maxDepth: Int)(
   def randomProgram: Op = apply(start) // WARNING: Problems with apply()
 
   class TooLargeException extends Exception
-  def apply(nt: Any): Op = try {
-    apply(nt, 0)
+  def apply(typ: Any): Op = try {
+    apply(typ, 0)
   } catch {
-    case _: TooLargeException => apply(nt)
+    case _: TooLargeException => apply(typ)
   }
 
-  def apply(nt: Any, depth: Int): Op = {
+  def apply(typ: Any, depth: Int): Op = {
     if (depth > maxDepth) throw new TooLargeException()
-    val prod = if (depth < stoppingDepth) grammar(nt)
-    else if (grammar(nt).hasTerminalRHs) grammar.terminalProductions(nt)
-    else grammar(nt)
+    val prod = if (depth < stoppingDepth) grammar(typ)
+    else if (grammar(typ).hasTerminalRHs) grammar.terminalProductions(typ)
+    else grammar(typ)
     val rule = prod.right(rng)
     rule match {
       case (op: Any, args: Seq[Any]) => // More than one argument
-        Op(nt, op, args.map(apply(_, depth + 1)).toList: _*)
+        Op(typ, op, args.map(apply(_, depth + 1)).toList: _*)
       case (op: Any, args: Product) => // More than one argument
-        Op(nt, op, args.productIterator.map(apply(_, depth + 1)).toList: _*)
+        Op(typ, op, args.productIterator.map(apply(_, depth + 1)).toList: _*)
       case  cp: ConstantProvider =>
-        cp(nt)
+        cp(typ)
       case (op: Any, arg: Any) => // One argument (requires special handling because '( )' does not produce Product1
-        Op(nt, op, apply(arg, depth + 1))
-      case op: Any => Op(nt, op) // Terminal
+        Op(typ, op, apply(arg, depth + 1))
+      case op: Any => Op(typ, op) // Terminal
     }
   }
 }
@@ -56,13 +56,13 @@ case class ConstantProviderUniformD(min: Double, max: Double)(implicit rng: TRan
     extends ConstantProvider {
   assume(max > min)
   val range = max - min
-  def apply(nt: Any) = Op(nt, min + range * rng.nextDouble)
+  def apply(typ: Any) = Op(typ, min + range * rng.nextDouble)
 }
 
 case class ConstantProviderUniformI(min: Int, max: Int)(implicit rng: TRandom)
     extends ConstantProvider {
   assume(max >= min)  // allowing all constants being the same 
   val range = max - min + 1
-  def apply(nt: Any) = Op(nt, min + rng.nextInt(range))
+  def apply(typ: Any) = Op(typ, min + rng.nextInt(range))
 }
 
