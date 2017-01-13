@@ -34,7 +34,7 @@ case class Production(nt: Any, r: Seq[Any]) {
  * Abstracts from implementation details of a given language, and from its semantics. 
  * 
  */
-case class Grammar(g: Map[Any, Seq[Any]], startNT: Any) {
+case class Grammar( startNT: Any, g: Map[Any, Seq[Any]]) {
   assume(g.nonEmpty)
   val start = Production(startNT, g(startNT))
   // For fast retrieval of productions, we store them in a map
@@ -64,12 +64,10 @@ case class Grammar(g: Map[Any, Seq[Any]], startNT: Any) {
 }
 
 case object Grammar {
-  // Assumes that the first nonterminal is the start symbol of the grammar
-  def apply(startSymbol: Any, g: (Any, Seq[Any])*) = { println(startSymbol);new Grammar(g.toMap, startSymbol)}
-  def apply(g: (Any, Seq[Any])*) = new Grammar(g.toMap, g.head._1)
-  def fromMap[N, R](g: Map[N, Seq[R]]) = new Grammar(g map {
+  def apply(startSymbol: Any, g: (Any, Seq[Any])*) = new Grammar(startSymbol,g.toMap )
+  def fromMap[N, R](startSymbol: Any,g: Map[N, Seq[R]]) = new Grammar(startSymbol, g map {
     case (k, v) => k.asInstanceOf[Any] -> v.asInstanceOf[Seq[R]]
-  }, g.keys.head)
+  })
   // Expects map of entries: (arity -> Seq of instructions)
   def fromSingleTypeInstructions(instr: (Int, Seq[Any])*): Grammar =
     fromSingleTypeInstructions(instr.toMap)
@@ -80,7 +78,7 @@ case object Grammar {
         case (arity, instrList) => instrList.map(instr => instr -> Seq.fill(arity)('S))
       }
     }.flatten.toList
-    new Grammar(Map('S -> rightHand), 'S)
+    new Grammar('S, Map('S -> rightHand))
   }
 }
 

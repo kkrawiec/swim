@@ -80,6 +80,8 @@ case object StringDomain extends Domain[String, String, Op] {
 }
 
 object StringDomainTest extends IApp('maxGenerations -> 100, 'initMaxTreeDepth -> 20) { // 'parEval -> false 
+  
+  rng.setSeed(3)
   val grammar = Grammar('str, // initial symbol of the grammar
     'str -> Seq(
       'head -> 'str,
