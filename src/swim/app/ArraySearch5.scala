@@ -2,7 +2,7 @@ package swim.app
 
 import fuel.func.RunExperiment
 import fuel.util.IApp
-import scala.collection.immutable.Seq
+import scala.collection.Seq
 import swim.tree.Op
 import swim.tree.ConstantProviderUniformI
 import swim.DomainWithVars
@@ -87,5 +87,5 @@ object ArraySearch5 extends IApp('maxGenerations -> 100) { // 'parEval -> false
     Test(y.:+(k), (pos + 1) % 5)
   }
 
-  RunExperiment(SimpleGP.Discrete(grammar, ArraySearch, tests))
+  RunExperiment(SimpleGP.Discrete(grammar, ArraySearch, tests.asInstanceOf[Seq[Test[Seq[Int], Int]]]))
 }

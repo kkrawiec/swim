@@ -2,7 +2,7 @@ package swim.app
 
 import fuel.util.TRandom
 import fuel.util.Options
-import scala.collection.immutable.Seq
+import scala.collection.Seq
 import swim.ProblemProvider
 import swim.tree.ConstantProviderUniformI
 import swim.DomainWithVars

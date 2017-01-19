@@ -10,7 +10,7 @@ import swim.tree.CodeFactory
 import swim.tree.Op
 import fuel.util.OptColl
 import swim.Tests
-import scala.collection.immutable.Seq
+import scala.collection.Seq
 import swim.tree.GPMoves
 import swim.tree.LexicaseGP
 import swim.tree.IFSGP
