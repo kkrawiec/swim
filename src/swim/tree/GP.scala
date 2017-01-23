@@ -20,6 +20,7 @@ import swim.Grammar
 import swim.eval.IFSEval
 import scala.collection.Seq
 import fuel.func.BestSoFar
+import fuel.func.SequentialEval
 
 /*
   * A class for realizing the workflow of the conventional 
@@ -110,7 +111,9 @@ object LexicaseGP {
 class LexicaseGP[I, O](moves: Moves[Op], eval: Op => Seq[Int],
                        correct: (Op, Seq[Int]) => Boolean = LexicaseGP.correct)(
                          implicit opt: Options, coll: Collector, rng: TRandom)
-    extends EACore(moves, ParallelEval(eval), correct) {
+    extends EACore(moves,
+                   if (opt('parEval, true)) ParallelEval(eval) else SequentialEval(eval),
+                   correct) {
 
   val selection = new LexicaseSelection[Op, Int](Ordering[Int])
   override def iter = SimpleBreeder(selection, moves: _*) andThen evaluate
