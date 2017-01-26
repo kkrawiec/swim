@@ -5,7 +5,7 @@ import swim.tree.ConstantProviderUniformI
 import swim.tree.Op
 import swim.tree.CodeFactory
 import fuel.util.Random
-import scala.collection.immutable.Seq
+import scala.collection.Seq
 
 /* Represents a single grammar production with a nonterminal nt. 
  * The right-hand side (RHS) r is a list of the following:

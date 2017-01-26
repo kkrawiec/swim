@@ -1,5 +1,6 @@
 package swim.eval
 
+import scala.collection.Seq
 import scala.annotation.tailrec
 import fuel.util.TRandom
 import fuel.func.StochasticSelection

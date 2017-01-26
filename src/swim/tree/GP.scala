@@ -18,7 +18,9 @@ import swim.Test
 import swim.Domain
 import swim.Grammar
 import swim.eval.IFSEval
-import scala.collection.immutable.Seq
+import scala.collection.Seq
+import fuel.func.BestSoFar
+import fuel.func.SequentialEval
 
 /*
   * A class for realizing the workflow of the conventional 
@@ -105,14 +107,20 @@ object LexicaseGP {
   def correct = (_: Any, e: Seq[Int]) => e.forall(_ == 0)
 }
 
+
 class LexicaseGP[I, O](moves: Moves[Op], eval: Op => Seq[Int],
                        correct: (Op, Seq[Int]) => Boolean = LexicaseGP.correct)(
                          implicit opt: Options, coll: Collector, rng: TRandom)
-    extends EACore(moves, ParallelEval(eval), correct) {
+    extends EACore(moves,
+                   if (opt('parEval, true)) ParallelEval(eval) else SequentialEval(eval),
+                   correct) {
 
   val selection = new LexicaseSelection[Op, Int](Ordering[Int])
   override def iter = SimpleBreeder(selection, moves: _*) andThen evaluate
 
+  val bsf = BestSoFar[Op, Seq[Int]](MaxPassedOrdering, it)
+  override def report: Function1[StatePop[(Op, Seq[Int])], StatePop[(Op, Seq[Int])]] = bsf
+  
   val checkSuccess = (s: StatePop[(Op, Seq[Int])]) => {
     val cor = s.find(e => correct(e._1, e._2))
     coll.setResult("successRate", if (cor.isDefined) 1.0 else 0.0)
@@ -125,5 +133,13 @@ class LexicaseGP[I, O](moves: Moves[Op], eval: Op => Seq[Int],
 }
 
 
-
+// Assumptions: 0 - correct on test, 1 - incorrect.
+object MaxPassedOrdering extends Ordering[Seq[Int]] {
+  def compare(a:Seq[Int], b:Seq[Int]) = a.sum compare b.sum
+}
+// Assumptions: 0 - correct on test, 1 - incorrect.
+object LongerOrMaxPassedOrdering extends Ordering[Seq[Int]] {
+  def compare(a:Seq[Int], b:Seq[Int]) = if (a.size == b.size) a.sum compare b.sum
+                                        else b.size compare a.size // longer sequences are preffered
+}
 

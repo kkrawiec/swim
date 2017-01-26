@@ -6,7 +6,7 @@ import fuel.moves.Moves
 import fuel.func.SearchOperator
 import fuel.Preamble.RndApply
 import swim.Grammar
-import scala.collection.immutable.Seq
+import scala.collection.Seq
 
 /**
   * GPMoves provides the default set of GP operators.
