@@ -1,6 +1,6 @@
 package swim
 
-import scala.collection.immutable.Seq
+import scala.collection.Seq
 
 import fuel.util.CodeExecutor
 import scala.io.Source

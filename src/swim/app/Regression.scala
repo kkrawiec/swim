@@ -11,7 +11,7 @@ import swim.ProblemProvider
 import swim.Tests
 import swim.tree.ConstantProviderUniformI
 import swim.tree.Op
-import scala.collection.immutable.Seq
+import scala.collection.Seq
 
 case class FloatingPointDomain(override val numVars: Int) extends DomainWithVars[Seq[Double], Double, Op](numVars) {
   override def semantics(input: Seq[Double]) = {
@@ -28,9 +28,9 @@ case class FloatingPointDomain(override val numVars: Int) extends DomainWithVars
           case 'cos      => math.cos(apply(a(0)))
           case 'tan      => math.tan(apply(a(0)))
           case 'exp      => math.exp(apply(a(0)))
-          case 'lg       => { val x = apply(a(0)); if (x > 0) math.log(math.abs(x)) else 1.0 }
+          case 'lg       => { val x = apply(a(0)); if (x != 0) math.log(math.abs(x)) else 1.0 }
           case 'sig      => 1.0 / (1 + math.exp(-apply(a(0))))
-          case 'n        => math.exp({ val r = apply(a(0)); r * r / 2 }) // N(0,1)
+          case 'n        => 1.0/math.sqrt(2*math.Pi) * math.exp({ val r = apply(a(0)); -(r * r / 2) }) // N(0,1)
           case 'neg      => -apply(a(0))
           case i: Int    => input(i)
           case v: Double => v
@@ -45,7 +45,7 @@ case object FloatingPointDomain {
   def instructionSet(name: String) = name match {
     case "default"     => Map(2 -> arithm)
     case "withTransc"  => Map(1 -> List('sin, 'cos, 'exp, 'lg, 'neg), 2 -> arithm)
-    case "withNonTrig" => Map(1 -> List('sig, 'exp, 'lg, '-, 'n), 2 -> arithm)
+    case "withNonTrig" => Map(1 -> List('sig, 'exp, 'lg, 'neg, 'n), 2 -> arithm)
   }
 }
 

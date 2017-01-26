@@ -1,6 +1,6 @@
 package swim.app
 
-import scala.collection.immutable.Seq
+import scala.collection.Seq
 
 import fuel.func.RunExperiment
 import fuel.util.IApp
