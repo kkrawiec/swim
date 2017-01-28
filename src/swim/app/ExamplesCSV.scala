@@ -14,6 +14,21 @@ import swim.tree.SimpleGP
 import fuel.util.Options
 import fuel.util.Rng
 import fuel.util.CollectorStdout
+import fuel.func.BestSoFar
+import fuel.core.StatePop
+import fuel.util.Collector
+
+
+object Common {
+  def getPassedTestsRatio(bsf: BestSoFar[Op, Int], totalTests: Int)(s: StatePop[(Op, Int)])(implicit coll: Collector) = {
+    // Computes ratio of passed tests for a best of run.
+    val (op, e) = bsf.bestSoFar.get
+    val ratio = if (e <= 0) 1.0 else (totalTests - e).toDouble / totalTests.toDouble
+    coll.setResult("best.passedTestsRatio", ratio)
+    s
+  }
+}
+
 
 object BooleanProblemFromCSV extends App {
   val defaultOpts = Options('maxGenerations -> 20, 'populationSize -> 100, 'csvFile -> "booleanEx1.csv", 'parEval -> false /*multithreaded evaluation off*/)
@@ -38,9 +53,11 @@ object BooleanProblemFromCSV extends App {
   // fitness function:
   def eval(s: Op) = tests.count(t => domain(s)(t._1) != t._2)
 
+  val gp = new SimpleGP(GPMoves(grammar, SimpleGP.defaultFeasible), eval, SimpleGP.correctDiscrete) {
+    override def epilogue = super.epilogue andThen Common.getPassedTestsRatio(bsf, tests.size)
+  }
   // launch the GP run
-  RunExperiment(new SimpleGP(GPMoves(grammar, SimpleGP.defaultFeasible),
-    eval, SimpleGP.correctDiscrete))
+  RunExperiment(gp)
 }
 
 
@@ -66,7 +83,9 @@ object RegressionProblemFromCSV extends App {
   // fitness function:
   def eval(s: Op) = tests.count(t => domain(s)(t._1) != t._2)
 
+  val gp = new SimpleGP(GPMoves(grammar, SimpleGP.defaultFeasible), eval, SimpleGP.correctDiscrete) {
+    override def epilogue = super.epilogue andThen Common.getPassedTestsRatio(bsf, tests.size)
+  }
   // launch the GP run
-  RunExperiment(new SimpleGP(GPMoves(grammar, SimpleGP.defaultFeasible),
-    eval, SimpleGP.correctDiscrete))
+  RunExperiment(gp)
 }
