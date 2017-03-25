@@ -4,6 +4,7 @@
 # sbt specific
 .cache
 .cache-main
+.cache-tests
 .history
 .lib/
 dist/*
@@ -18,3 +19,6 @@ project/plugins/project/
 .worksheet
 ./bin/
 /bin/
+
+# Swim specific
+res*.txt
