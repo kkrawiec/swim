@@ -34,12 +34,13 @@ case class Production(nt: Any, r: Seq[Any]) {
  * Abstracts from implementation details of a given language, and from its semantics. 
  * 
  */
-case class Grammar( startNT: Any, g: Map[Any, Seq[Any]]) {
+case class Grammar(startNT: Any, g: Map[Any, Seq[Any]]) {
   assume(g.nonEmpty)
   val start = Production(startNT, g(startNT))
   // For fast retrieval of productions, we store them in a map
   // indexed with the nonterminals:
-  val allProductions = g map { case (k, v) => (k -> Production(k, v)) }
+  val allProductions: Map[Any, Production] = g map { case (k, v) => k -> Production(k, v) }
+  val allNT: Set[Any] = allProductions.keys.toSet
 
   private val wrongRHSs = {
     for (p <- allProductions.values) yield {

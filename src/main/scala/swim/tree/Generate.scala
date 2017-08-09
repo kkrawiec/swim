@@ -29,8 +29,8 @@ class CodeFactory(val grammar: Grammar, stoppingDepth: Int, maxDepth: Int)(
   def apply(typ: Any, depth: Int): Op = {
     if (depth > maxDepth) throw new TooLargeException()
     val prod = if (depth < stoppingDepth) grammar(typ)
-    else if (grammar(typ).hasTerminalRHs) grammar.terminalProductions(typ)
-    else grammar(typ)
+      else if (grammar(typ).hasTerminalRHs) grammar.terminalProductions(typ)
+      else grammar(typ)
     val rule = prod.right(rng)
     rule match {
       case (op: Any, args: Seq[Any]) => // More than one argument
@@ -41,6 +41,8 @@ class CodeFactory(val grammar: Grammar, stoppingDepth: Int, maxDepth: Int)(
         cp(typ)
       case (op: Any, arg: Any) => // One argument (requires special handling because '( )' does not produce Product1
         Op(typ, op, apply(arg, depth + 1))
+      case op: Any if grammar.allNT.contains(op) => // Reference to other production (e.g. RealTerminals in Real ::= RealTerminals | RealFunctions)
+        apply(op, depth)
       case op: Any => Op(typ, op) // Terminal
     }
   }
