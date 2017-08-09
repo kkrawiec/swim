@@ -12,19 +12,19 @@ import scala.collection.Seq
  * - pairs of (opcode, argList)
  * - atoms (terminals)
  * where argList can be either Seq or Product. 
- * However, the internal representation, stored in 'right', is Seq.
+ * However, the internal representation stored in 'right' is Seq.
  */
 case class Production(nt: Any, r: Seq[Any]) {
   assume(r.nonEmpty, "The right-hand of a production cannot be empty")
-  val right = r.map {
+  val right: Seq[Any] = r.map {
     case (op: Any, args: Seq[Any]) => (op, args)
     case (op: Any, args: Product)  => (op, args.productIterator.toList)
     case a: Any                    => a
   }
-  val nonTerminalRHs = right.filter(isNonterminalRHS(_))
-  val terminalRHs = right.filter(!isNonterminalRHS(_))
-  val hasTerminalRHs = terminalRHs.nonEmpty
-  def isNonterminalRHS(rhs: Any) = rhs match {
+  val nonTerminalRHs: Seq[Any] = right.filter(isNonterminalRHS(_))
+  val terminalRHs: Seq[Any]    = right.filter(!isNonterminalRHS(_))
+  val hasTerminalRHs: Boolean  = terminalRHs.nonEmpty
+  def isNonterminalRHS(rhs: Any): Boolean = rhs match {
     case (op: Any, args: Seq[Any]) => true
     case _                         => false
   }
@@ -50,7 +50,7 @@ case class Grammar(startNT: Any, g: Map[Any, Seq[Any]]) {
             args.forall(
               a => allProductions.keys.exists(_ == a))
           case (op: Any, arg: Any) => allProductions.keys.exists(_ == arg)
-          case rhs                 => throw new InvalidGrammarSyntax(f"Ill-formed right-hand side: $rhs")
+          case _                   => throw new InvalidGrammarSyntax(f"Ill-formed right-hand side: $rhs")
         })
       }
     }
@@ -59,9 +59,9 @@ case class Grammar(startNT: Any, g: Map[Any, Seq[Any]]) {
     f"All nonterminals on the right-hand sides have to have productions starting with them. These don't: ${wrongRHSs}")
 
   // A subset of productions that have no nonterminals in their RHSs
-  val terminalProductions = allProductions.filter(_._2.hasTerminalRHs)
+  val terminalProductions: Map[Any, Production] = allProductions.filter(_._2.hasTerminalRHs)
     .map(p => (p._1 -> Production(p._2.nt, p._2.terminalRHs)))
-  def apply(nt: Any) = allProductions(nt)
+  def apply(nt: Any): Production = allProductions(nt)
 }
 
 case object Grammar {
@@ -73,12 +73,12 @@ case object Grammar {
   def fromSingleTypeInstructions(instr: (Int, Seq[Any])*): Grammar =
     fromSingleTypeInstructions(instr.toMap)
   def fromSingleTypeInstructions(instr: Map[Int, Seq[Any]]): Grammar = {
-    val rightHand = instr.map {
+    val rightHand = instr.flatMap {
       case (arity, instrList) => (arity, instrList) match {
         case (0, instrList)     => instrList
         case (arity, instrList) => instrList.map(instr => instr -> Seq.fill(arity)('S))
       }
-    }.flatten.toList
+    }.toList
     new Grammar('S, Map('S -> rightHand))
   }
 }
@@ -87,7 +87,7 @@ class InvalidGrammarSyntax(msg: String) extends Exception(msg)
 
 object TestGrammar {
   def main(args: Array[String]): Unit = {
-    println(Grammar(
+    println(Grammar('S,
       'S -> Seq(
         0, 1, 'x, 'y,
         '+ -> ('S, 'S),
@@ -98,7 +98,7 @@ object TestGrammar {
         '& -> ('SB, 'SB),
         '<= -> ('S, 'S))))
     try {
-      Grammar(
+      Grammar('S,
         'S -> Seq(
           '+ -> ('S, 'S),
           'ite -> ('SB, 'S, 'S)),
@@ -109,7 +109,7 @@ object TestGrammar {
       case e: AssertionError => println(f"OK: $e")
     }
     try {
-      Grammar('S -> Seq())
+      Grammar('S, 'S -> Seq())
     } catch {
       case e: AssertionError => println(f"OK: $e")
     }
@@ -125,7 +125,7 @@ object TestGrammar {
         '* -> ('S, 'S),
         '/ -> ('S, 'S)))
     println(rawGrammar)
-    val g = Grammar(rawGrammar)
+    val g = Grammar('S, rawGrammar)
 
     // convenience functions:
     def S(op: Any, args: Op*) = Op('S, op, args: _*)
