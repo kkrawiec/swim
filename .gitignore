@@ -20,5 +20,10 @@ project/plugins/project/
 ./bin/
 /bin/
 
+# IntelliJ specific
+.idea
+.settings
+
 # Swim specific
+swim.jar
 res*.txt
