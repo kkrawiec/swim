@@ -5,12 +5,12 @@ import scala.collection.Seq
 import fuel.util.CodeExecutor
 import scala.io.Source
 
-/* Tests represents a pair of program input and the corresponding desired output.
+/* A test represents a pair of program input and the corresponding desired output.
  * 
  */
-class Test[I, O](input: I, output: O) extends Tuple2(input, output) {
-  def input = _1
-  def output = _2
+class Test[I, O](val input: I, val output: O) {
+  val _1 = input
+  val _2 = output
 }
 object Test {
   def apply[I, O](input: I, output: O) = new Test(input, output)
@@ -50,7 +50,7 @@ object Tests {
   def toT[T](s: String) = try {
     s.asInstanceOf[T]
   } catch {
-    case _ : Throwable => throw new Exception(f"Cannot convert value $s to target type")
+    case _: Throwable => throw new Exception(f"Cannot convert value $s to target type")
   }
 
   def str2bool(s: String) = s match {
