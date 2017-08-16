@@ -27,15 +27,14 @@ import fuel.func.SequentialEval
   * tree-based GP (multi-type or single-type).
   * 
   */
-class SimpleGP[I, O, E](moves: Moves[Op],
-                        eval: Op => E,
-                        stop: (Op, E) => Boolean = ((s: Op, e: E) => false))(
-                          implicit opt: Options, coll: Collector, rng: TRandom,
-                          ordering: Ordering[E])
+class SimpleGP[E](moves: Moves[Op],
+                  eval: Op => E,
+                  stop: (Op, E) => Boolean = (s: Op, e: E) => false)
+                 (implicit opt: Options, coll: Collector, rng: TRandom,
+                  ordering: Ordering[E])
     extends SimpleEA[Op, E](moves, eval, stop)(opt, coll, rng, ordering) {
 
-  override def iter = SimpleBreeder(selection, moves: _*) andThen
-    evaluate
+  override def iter = SimpleBreeder(selection, moves: _*) andThen evaluate
 
   val checkSuccess = (s: StatePop[(Op, E)]) => {
     val cor = s.find(e => stop(e._1, e._2))
@@ -52,12 +51,12 @@ class SimpleGP[I, O, E](moves: Moves[Op],
 object SimpleGP {
 
   def Discrete[I, O](pprov: ProblemProvider[I, O, Op])(
-    implicit opt: Options, coll: Collector, rng: TRandom): SimpleGP[I, O, Int] = {
+    implicit opt: Options, coll: Collector, rng: TRandom): SimpleGP[Int] = {
     implicit val (grammar, domain, tests) = pprov(opt)
     Discrete(grammar, domain, tests)
   }
   def Discrete[I, O](grammar: Grammar, domain: Domain[I, O, Op], tests: Seq[Test[I, O]])(
-    implicit opt: Options, coll: Collector, rng: TRandom): SimpleGP[I, O, Int] = {
+    implicit opt: Options, coll: Collector, rng: TRandom): SimpleGP[Int] = {
     def eval(s: Op) = tests.count(t => domain(s)(t._1) != t._2)
     new SimpleGP(GPMoves(grammar, defaultFeasible), eval, correctDiscrete)
   }
@@ -108,9 +107,9 @@ object LexicaseGP {
 }
 
 
-class LexicaseGP[I, O](moves: Moves[Op], eval: Op => Seq[Int],
-                       correct: (Op, Seq[Int]) => Boolean = LexicaseGP.correct)(
-                         implicit opt: Options, coll: Collector, rng: TRandom)
+class LexicaseGP(moves: Moves[Op], eval: Op => Seq[Int],
+                 correct: (Op, Seq[Int]) => Boolean = LexicaseGP.correct)
+                (implicit opt: Options, coll: Collector, rng: TRandom)
     extends EACore(moves,
                    if (opt('parEval, true)) ParallelEval(eval) else SequentialEval(eval),
                    correct) {
