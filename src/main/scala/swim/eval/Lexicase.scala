@@ -20,15 +20,22 @@ import fuel.Preamble.RndApply
   * 
   */
 class LexicaseSelection[S, E](o: Ordering[E])(implicit rand: TRandom)
-    extends StochasticSelection[S, Seq[E]](rand) {
-  def apply(pop: Seq[(S, Seq[E])]) = {
-    @tailrec def sel(sols: Seq[(S, Seq[E])], cases: IndexedSeq[Int]): (S, Seq[E]) =
+  extends LexicaseSelectionMain[S, E, Seq[E]](o) {}
+
+/**
+  * This is a base version of the lexicase selection which accepts any fitness extending
+  * Seq[E].
+  */
+class LexicaseSelectionMain[S, E, SeqE <: Seq[E]](o: Ordering[E])(implicit rand: TRandom)
+  extends StochasticSelection[S, SeqE](rand) {
+  def apply(pop: Seq[(S, SeqE)]) = {
+    @tailrec def sel(sols: Seq[(S, SeqE)], cases: IndexedSeq[Int]): (S, SeqE) =
       if (sols.size == 1) sols(0)
       else if(cases.isEmpty) sols(rand)
       else {
         val theCase = cases.head
-        val ord = new Ordering[(S, Seq[E])] {
-          override def compare(a: (S, Seq[E]), b: (S, Seq[E])) = o.compare(a._2(theCase), b._2(theCase))
+        val ord = new Ordering[(S, SeqE)] {
+          override def compare(a: (S, SeqE), b: (S, SeqE)) = o.compare(a._2(theCase), b._2(theCase))
         }
         val best = sols.min(ord)
         sel(sols.filter(s => ord.compare(s, best) <= 0), cases.tail)

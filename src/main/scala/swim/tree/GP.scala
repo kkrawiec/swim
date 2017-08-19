@@ -13,11 +13,11 @@ import fuel.util.Collector
 import fuel.util.Options
 import fuel.util.TRandom
 import swim.ProblemProvider
-import swim.eval.LexicaseSelection
+import swim.eval.{IFSEval, LexicaseSelection, LexicaseSelectionMain}
 import swim.Test
 import swim.Domain
 import swim.Grammar
-import swim.eval.IFSEval
+
 import scala.collection.Seq
 import fuel.func.BestSoFar
 import fuel.func.SequentialEval
@@ -107,20 +107,29 @@ object LexicaseGP {
 }
 
 
+
 class LexicaseGP(moves: Moves[Op], eval: Op => Seq[Int],
                  correct: (Op, Seq[Int]) => Boolean = LexicaseGP.correct)
                 (implicit opt: Options, coll: Collector, rng: TRandom)
-    extends EACore(moves,
-                   if (opt('parEval, true)) ParallelEval(eval) else SequentialEval(eval),
-                   correct) {
+    extends LexicaseGPMain[Int, Seq[Int]](moves, eval, correct, MaxPassedOrdering)
 
-  val selection = new LexicaseSelection[Op, Int](Ordering[Int])
+
+class LexicaseGPMain[E, SeqE <: Seq[E]](moves: Moves[Op],
+                                        eval: Op => SeqE,
+                                        correct: (Op, SeqE) => Boolean,
+                                        orderingBsf: Ordering[SeqE])
+                (implicit opt: Options, coll: Collector, rng: TRandom, ordering: Ordering[E])
+  extends EACore[Op, SeqE](moves,
+    if (opt('parEval, true)) ParallelEval(eval) else SequentialEval(eval),
+    correct) {
+
+  val selection = new LexicaseSelectionMain[Op, E, SeqE](ordering)
   override def iter = SimpleBreeder(selection, moves: _*) andThen evaluate
 
-  val bsf = BestSoFar[Op, Seq[Int]](MaxPassedOrdering, it)
-  override def report: Function1[StatePop[(Op, Seq[Int])], StatePop[(Op, Seq[Int])]] = bsf
-  
-  val checkSuccess = (s: StatePop[(Op, Seq[Int])]) => {
+  val bsf = BestSoFar[Op, SeqE](orderingBsf, it)
+  override def report: Function1[StatePop[(Op, SeqE)], StatePop[(Op, SeqE)]] = bsf
+
+  val checkSuccess = (s: StatePop[(Op, SeqE)]) => {
     val cor = s.find(e => correct(e._1, e._2))
     coll.setResult("successRate", if (cor.isDefined) 1.0 else 0.0)
     coll.setResult("lastGeneration", it.count)
