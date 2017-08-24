@@ -43,16 +43,22 @@ object Op {
   def apply(op: Any, args: Op*): Op = Op(NT_DEFAULT, op, args:_*)
   
   /**
-   * Constructs Op given it's string encoding in the form: Op(ARG1, ARG2, ...).
-   * As nonterminal symbol assigned will be 'default.
-   * For example from "+(-(a, b), c)" will be created Op('+, Op('-, Op('a), Op('b)), Op('c)).
-   * 
+   * Constructs an instance of Op given it's string encoding in the form: Op(ARG1 ARG2 ...).
+   * As nonterminal grammar symbol assigned will be 'default, so be careful when using in
+   * contexts when grammar information is important, such as search operators.
+   *
+   * Example:
+   * from "+(-(a b) c)" will be created Op('+, Op('-, Op('a), Op('b)), Op('c)).
+   *
    * @param s string encoding of op.
-   * @param convertConsts if set to true (default), terminals detected as Boolean, Int, Double or
-   * String constants will be converted to instances of those types.
    * @param delim delimiter which separates arguments of functions (default: " ").
+   * @param convertConsts if set to true (default), terminals detected as Boolean, Int, Double or
+   *                      String constants will be converted to instances of those types.
+   * @param useSymbols if true (default), op names will be instances of Symbol class. Otherwise
+   *                  they will be Strings.
    */
-  def fromStr(s: String, delim: String = " ", convertConsts: Boolean = true): Op = {
+  def fromStr(s: String, delim: String = " ", convertConsts: Boolean = true,
+              useSymbols: Boolean = true): Op = {
     def isBoolean(s: String): Boolean = if (s == "true" || s == "false") true else false
     def isInt(s: String): Boolean = try { val x = s.toInt; true } catch { case _:Throwable => false }
     def isDouble(s: String): Boolean = try { val x = s.toDouble; true } catch { case _:Throwable => false }
@@ -63,14 +69,14 @@ object Op {
         else if (isInt(s)) s.toInt
         else if (isDouble(s)) s.toDouble
         else if (isString(s)) s.substring(1, s.size-1)
-        else Symbol(s)
-      else
-        Symbol(s)
+        else if (useSymbols) Symbol(s)
+        else s
+      else if (useSymbols) Symbol(s) else s
     }
     def getStringOfFirstArg(s: String): (String, Int) = {
       val iComa = s.indexOf(delim)
       val iPar = s.indexOf("(")
-      if (iComa == -1) // This is a single terminal - return whole string.
+      if (iComa == -1) // This is a single terminal - return whole string
         (s, s.size)
       else if (iPar == -1 ||
               (iPar != -1 && iComa < iPar))
@@ -96,12 +102,12 @@ object Op {
     }
     try {
       val i = s.indexOf("(")
-      if (i == -1) Op(getTerminalOp(s))  // Returning terminal.
+      if (i == -1) Op(getTerminalOp(s))  // Returning terminal
       else {
         val op = s.substring(0, i)
         val sargs = s.substring(i+1, s.size-1)
-        val args = getRawArgs(sargs).map{ a => fromStr(a.trim(), delim, convertConsts) }
-        Op(Symbol(op), args:_*)
+        val args = getRawArgs(sargs).map{ a => fromStr(a.trim(), delim, convertConsts, useSymbols) }
+        Op(if (useSymbols) Symbol(op) else op, args:_*)
       }
     } catch {
       case _:Throwable => throw new Exception("Wrong encoding of Op instance!")
