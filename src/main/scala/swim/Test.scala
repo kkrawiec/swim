@@ -9,8 +9,9 @@ import scala.io.Source
  * 
  */
 class Test[I, O](val input: I, val output: O) {
-  val _1 = input
-  val _2 = output
+  val _1: I = input
+  val _2: O = output
+  override def toString: String = s"Test($input, $output)"
 }
 object Test {
   def apply[I, O](input: I, output: O) = new Test(input, output)
