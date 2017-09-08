@@ -24,7 +24,7 @@ import swim.tree.IFSGP
  * as a set of tests:
  */
 object TestGPMyProblem extends IApp('maxGenerations -> 20, 'populationSize -> 100) {
-  val grammar = Grammar('S -> Seq(
+  val grammar = Grammar('S, 'S -> Seq(
     0, 1, // input variables
     '+ -> ('S, 'S),
     '- -> ('S, 'S),
