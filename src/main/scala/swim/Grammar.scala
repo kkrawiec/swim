@@ -28,12 +28,22 @@ case class Production(nt: Any, r: Seq[Any]) {
     case (op: Any, args: Seq[Any]) => true
     case _                         => false
   }
+
+  /**
+    * Checks, if the given element is present in the right hand side of this production.
+    */
+  def contains(s: Any): Boolean = {
+    right.exists{
+      case (op: Any, args: Seq[Any]) => op == s || args.contains(s)
+      case a: Any => a == s
+    }
+  }
 }
 
-/* Represents the syntax of programming language. 
- * Abstracts from implementation details of a given language, and from its semantics. 
- * 
- */
+/**
+  * Represents the syntax of programming language.
+  * Abstracts from implementation details of a given language, and from its semantics.
+  */
 case class Grammar(startNT: Any, g: Map[Any, Seq[Any]]) {
   assume(g.nonEmpty)
   val start = Production(startNT, g(startNT))
@@ -62,6 +72,14 @@ case class Grammar(startNT: Any, g: Map[Any, Seq[Any]]) {
   val terminalProductions: Map[Any, Production] = allProductions.filter(_._2.hasTerminalRHs)
     .map(p => (p._1 -> Production(p._2.nt, p._2.terminalRHs)))
   def apply(nt: Any): Production = allProductions(nt)
+
+  /**
+    * Checks, if the given element is present in the grammar as the right hand side
+    * of a certain production.
+    */
+  def contains(s: Any): Boolean = {
+    allProductions.values.exists{ p => p.contains(s) }
+  }
 }
 
 case object Grammar {
@@ -126,6 +144,10 @@ object TestGrammar {
         '/ -> ('S, 'S)))
     println(rawGrammar)
     val g = Grammar('S, rawGrammar)
+    assert(g.contains('S))
+    assert(g.contains('+))
+    assert(g.contains('x))
+    assert(!g.contains('SB))
 
     // convenience functions:
     def S(op: Any, args: Op*) = Op('S, op, args: _*)
