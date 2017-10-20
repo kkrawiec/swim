@@ -13,7 +13,7 @@ import swim.Grammar
   * Recommendation:
   *  Even relatively low stoppingDepth values may lead to huge programs. Recommended setting is below 5.
   */
-class CodeFactory(val grammar: Grammar, stoppingDepth: Int, maxDepth: Int)(
+class CodeFactory(val grammar: Grammar, stoppingDepth: Int, maxDepth: Int, isFeasible: Op => Boolean = _ => true)(
     implicit rng: TRandom) {
   val start = grammar.startNT
 
@@ -21,7 +21,9 @@ class CodeFactory(val grammar: Grammar, stoppingDepth: Int, maxDepth: Int)(
 
   class TooLargeException extends Exception
   def apply(typ: Any): Op = try {
-    apply(typ, 0)
+    val res = apply(typ, 0)
+    if (isFeasible(res)) res
+    else apply(typ)
   } catch {
     case _: TooLargeException => apply(typ)
   }

@@ -18,9 +18,11 @@ case class GPMoves(grammar: Grammar, isFeasible: Op => Boolean = (_: Op) => true
     extends Moves[Op] {
   val initMaxTreeDepth = opt('initMaxTreeDepth, 5, (_: Int) >= 0)
   val stoppingDepthRatio = opt('stoppingDepthRatio, 0.8, ((x: Double) => x >= 0 && x <= 1.0))
-  val cfPrograms = new CodeFactory(grammar, math.round(stoppingDepthRatio * initMaxTreeDepth).toInt, initMaxTreeDepth)
+  val cfPrograms = new CodeFactory(grammar, math.round(stoppingDepthRatio * initMaxTreeDepth).toInt,
+    initMaxTreeDepth, isFeasible)
   val maxSubtreeDepth = opt('maxSubtreeDepth, 5, (_: Int) > 0)
-  val cfFragments = new CodeFactory(grammar, math.round(stoppingDepthRatio * maxSubtreeDepth).toInt, maxSubtreeDepth)
+  val cfFragments = new CodeFactory(grammar, math.round(stoppingDepthRatio * maxSubtreeDepth).toInt,
+    maxSubtreeDepth, isFeasible)
   def ns = UniformNodeSelector(rng) // or: KozaNodeSelector(0.1)
 
   override def newSolution = cfPrograms.randomProgram
