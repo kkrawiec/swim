@@ -49,4 +49,14 @@ final class TestOp {
     assertEquals(Op('+, Op('a), Op('--, Op('b), Op('*, Op('c), Op('d)))), opT)
     assertEquals(opT, opF)
   }
+
+  @Test def test_Op_countAndContains(): Unit = {
+    val op = Op.fromStr("recfun(recfun(+(a, recfun(0))))", delim = ", ")
+    assertEquals(true, op.contains('recfun))
+    assertEquals(3, op.count('recfun))
+    assertEquals(true, op.contains('+))
+    assertEquals(1, op.count('+))
+    assertEquals(false, op.contains('-))
+    assertEquals(0, op.count('-))
+  }
 }

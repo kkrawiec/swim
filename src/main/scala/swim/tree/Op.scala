@@ -30,9 +30,28 @@ case class Op(val nt: Any, val op: Any, val args: Op*) extends Program {
     }
     case _ => None
   }
+
+  /**
+    * Checks if this Op or any of its children contain the name 'theOp'.
+    * E.g. Op(+, Op(x), Op(0)) contains names: "+", "x", "0".
+    */
   def contains(theOp: Any): Boolean =
     if (op == theOp) true
     else args.exists { child => child.contains(theOp) }
+
+  /**
+    * Counts the number of occurrences of the given name in the nodes of this Op.
+    */
+  def count(theOp: Any): Int = {
+    if (op == theOp)
+      1 + args.map(_.count(theOp)).sum
+    else
+      args.map(_.count(theOp)).sum
+  }
+
+  /**
+    * Creates a new Op with the same data as but with different arguments.
+    */
   def setArgs(newArgs: Seq[Op]): Op = Op(this.nt, this.op, newArgs:_*)
 }
 
