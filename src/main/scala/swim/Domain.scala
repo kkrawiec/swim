@@ -31,21 +31,22 @@ abstract class DomainWithVars[I, O, P <: Program](val numVars: Int) extends Doma
   * In case the recursion depth (recDepthLimit) is exceeded during execution,
   * interrupts the execution and returns None.
   *
-  * This domain handles specially if-then-else operator so that only a
+  * This domain handles specially if-then-else (ite) operator so that only a
   * single branch is executed. This makes it possible for the recurrence to stop.
-  * RecursiveDomain enforces existence of such an operator.
+  * RecursiveDomain enforces existence of such an operator and its name can be
+  * changed as one wishes (iteSymbol).
   */
 abstract class RecursiveDomain[I, O](numVars: Int,
                                      val recDepthLimit: Int,
-                                     val recSymbol: Symbol = 'rec,
-                                     val iteSymbol: Symbol = 'ite)
+                                     val recSymbol: Any = 'rec,
+                                     val iteSymbol: Any = 'ite)
   extends DomainWithVars[Seq[I], Option[O], Op](numVars) {
 
   override def semantics(input: Seq[I]): Function1[Op, Option[O]] =
     semanticsWithRecDepthLimit(input, 0)
 
   /**
-    * Provides semantic for each pair of operator and concrete value of its arguments.
+    * Provides semantic for each sequence of operator and values of its arguments.
     * To be overridden in your implementation. Result type is Any because operations can
     * return values of different types. This Any can be made to function only internally
     * inside this domain, because value returned by semantics function is converted to O type.
