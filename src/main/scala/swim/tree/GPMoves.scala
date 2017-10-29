@@ -7,6 +7,8 @@ import fuel.func.SearchOperator
 import fuel.Preamble.RndApply
 import swim.Grammar
 import scala.collection.Seq
+import scala.annotation.tailrec
+import swim.tree.UniformNodeSelector
 
 /**
   * GPMoves provides the default set of GP operators.
@@ -25,7 +27,13 @@ case class GPMoves(grammar: Grammar, isFeasible: Op => Boolean = (_: Op) => true
     maxSubtreeDepth, isFeasible)
   def ns = UniformNodeSelector(rng) // or: KozaNodeSelector(0.1)
 
-  override def newSolution = cfPrograms.randomProgram
+  @tailrec
+  private def newFeasibleSolution: Op = {
+    val p = cfPrograms.randomProgram
+    if (isFeasible(p)) p
+    else newFeasibleSolution
+  }
+  override def newSolution = newFeasibleSolution
 
   def subtreeMutation = (p: Op) => {
     val toReplace = ns(p)
