@@ -78,7 +78,7 @@ class LexicaseSelection01[S, E <: Seq[Int]](implicit rand: TRandom)
               i += 1
           }
           if (i > longest) {
-            longest = i + 1
+            longest = i
             best = (s, e) :: Nil
           } else if (i == longest)
             best = (s, e) :: best
