@@ -74,7 +74,7 @@ class LexicaseSelection01[S, E <: Seq[Int]](implicit rand: TRandom)
             i -= 1
           if (i == -1) {
             i = longest
-            while (e(t(i)) == 0 && i < n)
+            while (i < n && e(t(i)) == 0)
               i += 1
           }
           if (i > longest) {
