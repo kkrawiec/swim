@@ -56,14 +56,14 @@ class LexicaseSelectionMain[S, E, SeqE <: Seq[E]](o: Ordering[E])(implicit rand:
   *  - inspecting the list (permutation) of passed tests from the end, as this is more
   *    likely to detect failure early
   */
-class LexicaseSelection01[S](implicit rand: TRandom)
-    extends StochasticSelection[S, Seq[Int]](rand) {
-  def apply(pop: Seq[(S, Seq[Int])]) = {
+class LexicaseSelection01[S, E <: Seq[Int]](implicit rand: TRandom)
+    extends StochasticSelection[S, E](rand) {
+  def apply(pop: Seq[(S, E)]) = {
     val n = pop(0)._2.size
     val t = rand.shuffle(0.until(n).toIndexedSeq).toVector
     // longest series of uninterrupted zeros
     var longest: Int = 0
-    var best: List[(S, Seq[Int])] = Nil
+    var best: List[(S, E)] = Nil
     for ((s, e) <- pop) {
       // start from the end - larger probability of failing a test
       var i: Int = longest - 1
