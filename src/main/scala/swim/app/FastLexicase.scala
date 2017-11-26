@@ -21,17 +21,17 @@ object LexicaseGP01 {
     def eval(s: Op) = tests.map(t => if (domain(s)(t._1) == t._2) 0 else 1)
     val moves = GPMoves(grammar, SimpleGP.defaultFeasible)
     new LexicaseGP(moves, eval) {
-      val sel = new LexicaseSelection01[Op]()
+      val sel = new LexicaseSelection01[Op, Seq[Int]]()
       override def iter = SimpleBreeder(sel, moves: _*) andThen evaluate
     }
   }
   def correct = (_: Any, e: Seq[Int]) => e.forall(_ == 0)
 }
 
-object ExperimentalTestGPBoolL01 extends IApp('benchmark -> "mux11", 'maxGenerations -> 50, 'instructions -> "withNeg", 'printResults -> true) {
+object ExperimentalTestGPBoolL01 extends IApp('benchmark -> "mux6", 'maxGenerations -> 50, 'instructions -> "withNeg", 'printResults -> true) {
   RunExperiment(LexicaseGP01(BooleanBenchmark()))
 }
 
-object ExperimentalTestGPBoolL extends IApp('benchmark -> "mux11", 'maxGenerations -> 50, 'instructions -> "withNeg", 'printResults -> true) {
+object ExperimentalTestGPBoolL extends IApp('benchmark -> "mux6", 'maxGenerations -> 50, 'instructions -> "withNeg", 'printResults -> true) {
   RunExperiment(LexicaseGP(BooleanBenchmark()))
 }
