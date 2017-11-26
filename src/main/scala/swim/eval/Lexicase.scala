@@ -60,27 +60,32 @@ class LexicaseSelection01[S, E <: Seq[Int]](implicit rand: TRandom)
     extends StochasticSelection[S, E](rand) {
   def apply(pop: Seq[(S, E)]) = {
     val n = pop(0)._2.size
-    val t = rand.shuffle(0.until(n).toIndexedSeq).toVector
-    // longest series of uninterrupted zeros
-    var longest: Int = 0
-    var best: List[(S, E)] = Nil
-    for ((s, e) <- pop) {
-      // start from the end - larger probability of failing a test
-      var i: Int = longest - 1
-      while (i >= 0 && e(t(i)) == 0)
-        i -= 1
-      if (i == -1) {
-        i = longest
-        while (e(t(i)) == 0 && i < n)
-          i += 1
+    n match {
+      case 0 => pop(rand)
+      case _ => {
+        val t = rand.shuffle(0.until(n).toIndexedSeq).toVector
+        // longest series of uninterrupted zeros
+        var longest: Int = 0
+        var best: List[(S, E)] = Nil
+        for ((s, e) <- pop) {
+          // start from the end - larger probability of failing a test
+          var i: Int = longest - 1
+          while (i >= 0 && e(t(i)) == 0)
+            i -= 1
+          if (i == -1) {
+            i = longest
+            while (e(t(i)) == 0 && i < n)
+              i += 1
+          }
+          if (i > longest) {
+            longest = i + 1
+            best = (s, e) :: Nil
+          } else if (i == longest)
+            best = (s, e) :: best
+        }
+        best.toVector(rand)
       }
-      if (i > longest) {
-        longest = i + 1
-        best = (s, e) :: Nil
-      } else if (i == longest)
-        best = (s, e) :: best
     }
-    best.toVector(rand)
   }
 }
 
