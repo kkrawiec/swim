@@ -58,7 +58,7 @@ abstract class RecursiveDomain[I, O](numVars: Int,
   case object ExceptionTooDeepRecursion extends Exception
 
   def semanticsWithRecDepthLimit(input: Seq[I], recDepth: Int): Function1[Op, Option[O]] = {
-    assume(input.size == numVars, "Declared number of inputs is different than the provided.")
+    assume(input.size == numVars, s"Declared number of inputs ($numVars) is different than the provided (${input.size}).")
     new Function1[Op, Option[O]] {
 
       def operSemantics: Seq[Any] => Any = operationalSemantics(input)

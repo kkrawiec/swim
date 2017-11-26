@@ -1,13 +1,8 @@
 package swim.tree
 
 import scala.Ordering
-
 import fuel.core.StatePop
-import fuel.func.EACore
-import fuel.func.ParallelEval
-import fuel.func.SimpleBreeder
-import fuel.func.SimpleEA
-import fuel.func.TournamentSelection
+import fuel.func._
 import fuel.moves.Moves
 import fuel.util.Collector
 import fuel.util.Options
@@ -19,8 +14,6 @@ import swim.Domain
 import swim.Grammar
 
 import scala.collection.Seq
-import fuel.func.BestSoFar
-import fuel.func.SequentialEval
 
 /*
   * A class for realizing the workflow of the conventional 
@@ -123,7 +116,7 @@ class LexicaseGPMain[E, SeqE <: Seq[E]](moves: Moves[Op],
     if (opt('parEval, true)) ParallelEval(eval) else SequentialEval(eval),
     correct) {
 
-  val selection = new LexicaseSelectionMain[Op, E, SeqE](ordering)
+  val selection: StochasticSelection[Op, SeqE] = new LexicaseSelectionMain[Op, E, SeqE](ordering)
   override def iter = SimpleBreeder(selection, moves: _*) andThen evaluate
 
   val bsf = BestSoFar[Op, SeqE](orderingBsf, it)
