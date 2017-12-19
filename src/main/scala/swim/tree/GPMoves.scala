@@ -8,7 +8,6 @@ import fuel.Preamble.RndApply
 import swim.Grammar
 import scala.collection.Seq
 import scala.annotation.tailrec
-import swim.tree.UniformNodeSelector
 
 /**
   * GPMoves provides the default set of GP operators.
