@@ -2,9 +2,10 @@ package swim.eval
 
 import scala.collection.Seq
 import scala.annotation.tailrec
-import fuel.util.TRandom
+import fuel.util.{TRandom, Utils}
 import fuel.func.StochasticSelection
 import fuel.Preamble.RndApply
+
 import scala.collection.mutable.LinkedList
 import scala.collection.mutable.MutableList
 import scala.collection.mutable.ListBuffer
@@ -31,7 +32,7 @@ class LexicaseSelection[S, E](o: Ordering[E])(implicit rand: TRandom)
   */
 class LexicaseSelectionMain[S, E, SeqE <: Seq[E]](o: Ordering[E])(implicit rand: TRandom)
     extends StochasticSelection[S, SeqE](rand) {
-  def apply(pop: Seq[(S, SeqE)]) = {
+  def apply(pop: Seq[(S, SeqE)]): (S, SeqE) = {
     @tailrec def sel(sols: Seq[(S, SeqE)], cases: IndexedSeq[Int]): (S, SeqE) =
       if (sols.size == 1) sols(0)
       else if (cases.isEmpty) sols(rand)
@@ -58,7 +59,7 @@ class LexicaseSelectionMain[S, E, SeqE <: Seq[E]](o: Ordering[E])(implicit rand:
   */
 class LexicaseSelection01[S, E <: Seq[Int]](implicit rand: TRandom)
     extends StochasticSelection[S, E](rand) {
-  def apply(pop: Seq[(S, E)]) = {
+  def apply(pop: Seq[(S, E)]): (S, E) = {
     val n = pop(0)._2.size
     n match {
       case 0 => pop(rand)
@@ -88,6 +89,58 @@ class LexicaseSelection01[S, E <: Seq[Int]](implicit rand: TRandom)
     }
   }
 }
+
+
+
+/**
+  * Implementation of lexicase for the regression problems with epsilon automatically
+  * computed for each test separately as median absolute deviation. For each test t, a
+  * solution passes it when it has error <= best_error + eps_t.
+  *
+  * For details see:
+  * William La Cava, Lee Spector, and Kourosh Danai. "Epsilon-Lexicase Selection for Regression."
+  * In Proceedings of the Genetic and Evolutionary Computation Conference 2016 (GECCO '16)
+  */
+class EpsLexicaseSelection[S, E <: Seq[Double]](implicit rand: TRandom)
+  extends StochasticSelection[S, E](rand) {
+
+  def apply(pop: Seq[(S, E)]): (S, E) = {
+    val epsForTests = EpsLexicaseSelection.medianAbsDev(pop) // this should be computed once per iteration
+    apply(pop, epsForTests)
+  }
+
+  def apply(pop: Seq[(S, E)], epsForTests: IndexedSeq[Double]): (S, E) = {
+    @tailrec def sel(sols: Seq[(S, E)], cases: IndexedSeq[Int]): (S, E) =
+      if (sols.size == 1) sols(0)
+      else if (cases.isEmpty) sols(rand)
+      else {
+        val theCase = cases.head
+        val eps = epsForTests(theCase)
+        val best = sols.minBy(_._2(theCase))
+        sel(sols.filter{ s => s._2(theCase) <= best._2(theCase) + eps}, cases.tail)
+      }
+    // assumes nonempty pop
+    val t = rand.shuffle(pop(0)._2.indices.toIndexedSeq)  // shuffled indices
+    val r = sel(pop, t)
+    r
+  }
+}
+
+object EpsLexicaseSelection {
+  /**
+    * Returns a median absolute deviation for each test.
+    */
+  def medianAbsDev[S, E <: Seq[Double]](pop: Seq[(S, E)]): IndexedSeq[Double] = {
+    pop.head._2.indices.map{ i =>
+      val errs = pop.map(_._2(i))//.toVector // errors on test i
+      val medianErr = Utils.median(errs)
+      val deviations = pop.map { p => math.abs(p._2(i) - medianErr) }
+      Utils.median(deviations)
+    }.toVector
+  }
+}
+
+
 
 /**
   * EXPERIMENTAL
