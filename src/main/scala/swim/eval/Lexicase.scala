@@ -101,15 +101,10 @@ class LexicaseSelection01[S, E <: Seq[Int]](implicit rand: TRandom)
   * William La Cava, Lee Spector, and Kourosh Danai. "Epsilon-Lexicase Selection for Regression."
   * In Proceedings of the Genetic and Evolutionary Computation Conference 2016 (GECCO '16)
   */
-class EpsLexicaseSelection[S, E <: Seq[Double]](implicit rand: TRandom)
+class EpsLexicaseSelection[S, E <: Seq[Double]](epsForTests: Seq[Double])(implicit rand: TRandom)
   extends StochasticSelection[S, E](rand) {
 
   def apply(pop: Seq[(S, E)]): (S, E) = {
-    val epsForTests = EpsLexicaseSelection.medianAbsDev(pop) // this should be computed once per iteration
-    apply(pop, epsForTests)
-  }
-
-  def apply(pop: Seq[(S, E)], epsForTests: IndexedSeq[Double]): (S, E) = {
     @tailrec def sel(sols: Seq[(S, E)], cases: IndexedSeq[Int]): (S, E) =
       if (sols.size == 1) sols(0)
       else if (cases.isEmpty) sols(rand)
@@ -127,6 +122,9 @@ class EpsLexicaseSelection[S, E <: Seq[Double]](implicit rand: TRandom)
 }
 
 object EpsLexicaseSelection {
+  def apply[S, E <: Seq[Double]](pop: Seq[(S, E)])(implicit rand: TRandom) =
+    new EpsLexicaseSelection[S, E](medianAbsDev(pop))
+
   /**
     * Returns a median absolute deviation for each test.
     */

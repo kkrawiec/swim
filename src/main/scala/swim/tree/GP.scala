@@ -89,8 +89,8 @@ object IFSGP {
  * 
  */
 object LexicaseGP {
-  def apply[I, O](pprov: ProblemProvider[I, O, Op])(
-    implicit opt: Options, coll: Collector, rng: TRandom): EACore[Op, Seq[Int]] = {
+  def apply[I, O](pprov: ProblemProvider[I, O, Op])
+                 (implicit opt: Options, coll: Collector, rng: TRandom): LexicaseGP = {
     implicit val (grammar, domain, tests) = pprov(opt)
     def eval(s: Op) = tests.map(t => if (domain(s)(t._1) == t._2) 0 else 1)
     val moves = GPMoves(grammar, SimpleGP.defaultFeasible)
