@@ -97,8 +97,11 @@ class LexicaseSelection01[S, E <: Seq[Int]](implicit rand: TRandom)
   * computed for each test separately as median absolute deviation. For each test t, a
   * solution passes it when it has error <= best_error + eps_t.
   *
+  * This is an implementation of epsilon-lexicase selection as described in [1].
+  * For thresholding used is the formula from Equation 5.
+  *
   * For details see:
-  * William La Cava, Lee Spector, and Kourosh Danai. "Epsilon-Lexicase Selection for Regression."
+  * [1] William La Cava, Lee Spector, and Kourosh Danai. "Epsilon-Lexicase Selection for Regression."
   * In Proceedings of the Genetic and Evolutionary Computation Conference 2016 (GECCO '16)
   */
 class EpsLexicaseSelection[S, E <: Seq[Double]](epsForTests: Seq[Double])(implicit rand: TRandom)
