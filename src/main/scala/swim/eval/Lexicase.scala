@@ -103,6 +103,9 @@ class LexicaseSelection01[S, E <: Seq[Int]](implicit rand: TRandom)
   * For details see:
   * [1] William La Cava, Lee Spector, and Kourosh Danai. "Epsilon-Lexicase Selection for Regression."
   * In Proceedings of the Genetic and Evolutionary Computation Conference 2016 (GECCO '16)
+  *
+  * @param epsForTests epsilon values for subsequent tests. By default computed in the constructor
+  *                    of a companion object to be median absolute deviation of each test.
   */
 class EpsLexicaseSelection[S, E <: Seq[Double]](epsForTests: Seq[Double])(implicit rand: TRandom)
   extends StochasticSelection[S, E](rand) {
