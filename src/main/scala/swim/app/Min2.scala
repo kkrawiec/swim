@@ -52,17 +52,17 @@ object Min2 extends IApp('maxGenerations -> 100) {
   // - a pair of a symbol (instruction) and its arguments, each being a nonterminal
   //   like  ('+,('S, 'S))   or   '& -> ('SB, 'SB) below. 
   // Both terminals and nonterminals can be Any. 
-  val grammar = Grammar(
+  val grammar = Grammar('S,
     'S -> List(
       ConstantProviderUniformI(0, 1),
       'x, 'y,
       ('+, ('S, 'S)),
       ('-, ('S, 'S)),
       ('ite, ('SB, 'S, 'S))),
-    'SB -> List(
-      '! -> 'SB,
-      '& -> ('SB, 'SB),
-      '<= -> ('S, 'S)))
+  'SB -> List(
+    '! -> 'SB,
+    '& -> ('SB, 'SB),
+    '<= -> ('S, 'S)))
   // Rather than using ConstantProvider above, one could explicitly list the terminals 
   // 0, 1, as in the example below (Min2Efficiency). There are no technical reasons to prefer
   // one or another, note however that this choice affects the probability distribution of
@@ -81,7 +81,7 @@ object Min2 extends IApp('maxGenerations -> 100) {
 }
 
 object Min2Efficiency extends IApp() {
-  val grammar = Grammar(
+  val grammar = Grammar('S,
     'S -> List(
       0, 1, 'x, 'y,
       '+ -> ('S, 'S),
