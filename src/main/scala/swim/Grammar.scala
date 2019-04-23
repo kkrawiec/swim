@@ -46,6 +46,7 @@ case class Production(nt: Any, r: Seq[Any]) {
   */
 case class Grammar(startNT: Any, g: Map[Any, Seq[Any]]) {
   assume(g.nonEmpty)
+  assume(g.contains(startNT), "The declared start symbol is not present in the grammar.")
   val start = Production(startNT, g(startNT))
   // For fast retrieval of productions, we store them in a map
   // indexed with the nonterminals:
@@ -83,7 +84,7 @@ case class Grammar(startNT: Any, g: Map[Any, Seq[Any]]) {
 }
 
 case object Grammar {
-  def apply(startSymbol: Any, g: (Any, Seq[Any])*) = new Grammar(startSymbol,g.toMap )
+  def apply(startSymbol: Any, g: (Any, Seq[Any])*) = new Grammar(startSymbol, g.toMap)
   def fromMap[N, R](startSymbol: Any,g: Map[N, Seq[R]]) = new Grammar(startSymbol, g map {
     case (k, v) => k.asInstanceOf[Any] -> v.asInstanceOf[Seq[R]]
   })
