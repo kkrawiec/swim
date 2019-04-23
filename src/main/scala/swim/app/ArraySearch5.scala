@@ -67,7 +67,7 @@ case object ArraySearch extends DomainWithVars[Seq[Int], Int, Op](6) {
 
 object ArraySearch5 extends IApp('maxGenerations -> 100) { // 'parEval -> false 
 
-  val grammar = Grammar(
+  val grammar = Grammar('S,
     'S -> Seq(
       ConstantProviderUniformI(0, 5),
       'y1, 'y2, 'y3, 'y4, 'y5, 'k,
