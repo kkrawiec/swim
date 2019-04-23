@@ -129,7 +129,7 @@ object Op {
         Op(if (useSymbols) Symbol(op) else op, args:_*)
       }
     } catch {
-      case _:Throwable => throw new Exception("Wrong encoding of Op instance!")
+      case _:Throwable => throw new Exception(s"Wrong encoding of Op instance: $s")
     }
   }
 }
