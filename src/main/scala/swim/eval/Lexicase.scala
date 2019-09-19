@@ -136,7 +136,8 @@ object EpsLexicaseSelection {
     * into account for the median.
     */
   def medianAbsDev[S, E <: Seq[Double]](pop: Seq[(S, E)]): IndexedSeq[Double] = {
-    pop.head._2.indices.map{ i =>
+    val fitVectorIndices = pop.head._2.indices
+    fitVectorIndices.map{ i =>
       val errs = pop.map(_._2(i)).filter(x => !x.isNaN && !x.isInfinity)
       val medianErr = if (errs.isEmpty) 0.0 else Utils.median(errs)
       val deviations = pop.map { p => math.abs(p._2(i) - medianErr) }
