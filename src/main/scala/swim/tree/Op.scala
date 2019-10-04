@@ -62,7 +62,7 @@ object Op {
   def apply(op: Any, args: Op*): Op = Op(NT_DEFAULT, op, args:_*)
   
   /**
-   * Constructs an instance of Op given it's string encoding in the form: Op(ARG1 ARG2 ...).
+   * Constructs an instance of Op given its string encoding in the form: Op(ARG1 ARG2 ...).
    * As nonterminal grammar symbol assigned will be 'default, so be careful when using in
    * contexts when grammar information is important, such as search operators.
    *
@@ -103,7 +103,7 @@ object Op {
         (s.substring(0, iComa), iComa)
       else {
         // First argument is a nonterminal. This is the most problematic case, because
-        // we have to reliably get content between it's opening and closing parenthesis.
+        // we have to reliably get content between its opening and closing parenthesis.
         var i = iPar + 1
         var parOpened = 1
         while (i < s.size && parOpened > 0) {
